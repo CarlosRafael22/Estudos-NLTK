@@ -3,6 +3,8 @@ import random
 from nltk.corpus import movie_reviews
 from nltk.corpus import stopwords
 
+## So pra contar o tempo gasto em cada execucao
+import time
 
 documents = []
 for category in movie_reviews.categories():
@@ -75,20 +77,74 @@ featureSet = [(find_features(rev), category) for (rev, category) in documents]
 # Agora que pegamos as tuplas com a representacao das features e categorias podemos treinar o algoritmo
 ###########################################################################################
 
-#Treina nas primeiras 1900 tuplas e testa com o resto
-print(top_word_features_keys[:50])
-print('\n')
-print(featureSet[1])
-training_set = featureSet[:1900]
-testing_set = featureSet[1900:]
 
 
-#Usaremos o Naive Bayes pra treinar e testar
-# Naive Bayes: posterior prob = prior occurence x likelihood / evidence
+##################################################################################################
+# TEM DOIS JEITOS DE CLASSIFICAR E MEDIR A ACCURACY:
+# 1)
+# PEGANDO SIMPLESMENTE OS 1900 PRIMEIROS MOVIE_REVIEWS PARA TREINAREM O CLASSIFIER 
+# E OS 100 ULTIMOS MOVIE_REVIEWS PARA SEREM OS QUE SERAO TESTADOS E MEDIR ACCURACY EM CIMA DISSO
+# 2)
+# DIVIDINDO OS MOVIE_REVIEWS EM 10-FOLDS E FICAR VARIANDO O CONJUNTO DE TESTES DO PRIMEIRO FOLD ATE O ULTIMO
+# CALCULANDO A ACCURACY EM CADA ITERACAO E DPS CALCULA A MEDIA DE TODAS AS ACCURACIES
+##################################################################################################
 
-classifier = nltk.NaiveBayesClassifier.train(training_set)
-print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
-classifier.show_most_informative_features(15)
+
+def simple_training(featureSet):
+	start_time = time.time()
+	#Tem 2000 movie_reviews entao 100 ficam para serem testados
+	# print(featureSet[1])
+	training_set = featureSet[:1900]
+	testing_set = featureSet[1900:]
+
+	#Usaremos o Naive Bayes pra treinar e testar
+	# Naive Bayes: posterior prob = prior occurence x likelihood / evidence
+
+	classifier = nltk.NaiveBayesClassifier.train(training_set)
+	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
+	classifier.show_most_informative_features(15)
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+
+
+def _10_fold_cross_validation(featureSet):
+	start_time = time.time()
+	#Agora vou tentar criar um 10-fold training set pra ver se tem melhor desempenho
+	num_folds = 10
+	subset_size = len(featureSet)/num_folds
+	accuracy_list = []
+	for i in range(num_folds):
+		testing_this_round = featureSet[i*subset_size:][:subset_size]
+		training_this_round = featureSet[:i*subset_size] + featureSet[(i+1)*subset_size:]
+
+		print("Round "+ str(i) +" : ")
+		print("Testing fold is: " + "featureSet[" +str(i*subset_size)+":"+str((i+1)*subset_size)+"]")
+		#print(len(testing_this_round))
+		#print(len(training_this_round))
+		classifier = nltk.NaiveBayesClassifier.train(training_this_round)
+		accuracy_list.append(((nltk.classify.accuracy(classifier, testing_this_round)) * 100))
+		print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+	return accuracy_list
+
+
+def calculate_average(list):
+		acc_total = 0
+		for i in range(len(list)):
+			acc_total = acc_total + list[i]
+		return acc_total/len(list)
+
+
+########################################################
+# Chamo um tipo de treinamento ou outro aqui
+#########################################################
+
+#simple_training(featureSet)
+
+acc_list = _10_fold_cross_validation(featureSet)
+print(acc_list)
+print(calculate_average(acc_list))
+
+
+
 
 
 
