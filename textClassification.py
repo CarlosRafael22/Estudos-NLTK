@@ -25,7 +25,7 @@ all_words_no_stopwords = nltk.FreqDist(all_words_no_stopwords)
 
 #Vou tentar melhorar a lista de stopwords colocando nela algumas pontuacoes q nao servem de nada
 # Fiz elas com unicode pq eh assim que as stop_words estao
-punctuation = [u'.', u'-', u',', u'"', u'(', u')', u':', u'?', u"'", u'--', u';', u'!', u'$']
+punctuation = [u'.', u'-', u',', u'"', u'(', u')', u':', u'?', u"'", u'--', u';', u'!', u'$', u'*']
 punctuation = set(punctuation)
 new_stop_words = stop_words.union(punctuation)
 
@@ -48,7 +48,7 @@ top_word_features = all_words_no_stopwords.most_common(3000) #retorna (u'revolut
 
 #Como top_wf retorna (word,freq) iremos pegar so as palavras que sao as keys
 top_word_features_keys = [wf[0] for wf in top_word_features]
-print(top_word_features_keys[550:575])
+#print(top_word_features_keys[550:575])
 
 #Retorna uma lista com True ou False dizendo quais palavras da word_features o documento tem
 # retorna: {u'even': True, u'story': False, u'also': True, u'see': True, u'much': False,.... }
@@ -57,13 +57,13 @@ def find_features(document):
 	words = set(document)
 	features = {}
 	counter = 0
-	print(top_word_features_keys[:20])
-	for w in top_word_features_keys[:20]:
+	#print(top_word_features_keys[:20])
+	for w in top_word_features_keys:
 		features[w] = (w in words)
 
 	return features
 
-print((find_features(movie_reviews.words('neg/cv000_29416.txt'))))
+#print((find_features(movie_reviews.words('neg/cv000_29416.txt'))))
 
 #Vai retornar uma tupla com o dict dizendo que features o documento tem => {u'even': True, u'story': False, ...}
 # e que categoria esse dict de features representa
@@ -71,9 +71,24 @@ print((find_features(movie_reviews.words('neg/cv000_29416.txt'))))
 featureSet = [(find_features(rev), category) for (rev, category) in documents]
 
 
+###########################################################################################
+# Agora que pegamos as tuplas com a representacao das features e categorias podemos treinar o algoritmo
+###########################################################################################
+
+#Treina nas primeiras 1900 tuplas e testa com o resto
+print(top_word_features_keys[:50])
+print('\n')
+print(featureSet[1])
+training_set = featureSet[:1900]
+testing_set = featureSet[1900:]
 
 
+#Usaremos o Naive Bayes pra treinar e testar
+# Naive Bayes: posterior prob = prior occurence x likelihood / evidence
 
+classifier = nltk.NaiveBayesClassifier.train(training_set)
+print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
+classifier.show_most_informative_features(15)
 
 
 
