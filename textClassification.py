@@ -44,7 +44,7 @@ print(all_words_no_stopwords["stupid"])
 #word_features = list(all_words_no_stopwords.keys())[:50]
 
 #Pega as 20.000 palavras mais comuns de todos os reviews para servirem de features ao avaliarmos novos reviews
-top_word_features = all_words_no_stopwords.most_common(20000) #retorna (u'revolutionaries', 3)
+top_word_features = all_words_no_stopwords.most_common(3000) #retorna (u'revolutionaries', 3)
 
 #Como top_wf retorna (word,freq) iremos pegar so as palavras que sao as keys
 top_word_features_keys = [wf[0] for wf in top_word_features]
@@ -65,7 +65,20 @@ def find_features(document):
 
 print((find_features(movie_reviews.words('neg/cv000_29416.txt'))))
 
-#featureSet = [(find_features(rev), category) for (rev, category) in documents]
+#Vai retornar uma tupla com o dict dizendo que features o documento tem => {u'even': True, u'story': False, ...}
+# e que categoria esse dict de features representa
+# return: ({u'even': True, u'story': False, ...}, neg)
+featureSet = [(find_features(rev), category) for (rev, category) in documents]
+
+
+
+
+
+
+
+
+
+
 
 
 # movie_reviews.words(fileid) volta todas as palavras com unicode, ou seja, u'plot' ao inves de 'plot'
