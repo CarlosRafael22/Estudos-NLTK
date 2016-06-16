@@ -8,6 +8,10 @@ from nltk.classify.scikitlearn import SklearnClassifier
 from sklearn.naive_bayes import MultinomialNB, GaussianNB, BernoulliNB
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.svm import SVC, LinearSVC, NuSVC
+
+from nltk.classify import ClassifierI #inhirate from Classifier class
+from statistics import mode
+
 ## So pra contar o tempo gasto em cada execucao
 import time
 import pickle
@@ -19,7 +23,7 @@ for category in movie_reviews.categories():
 	for fileid in movie_reviews.fileids(category):
 		documents.append((movie_reviews.words(fileid), category))
 
-random.shuffle(documents)
+#random.shuffle(documents)
 #Retorna desse jeito: ([u'plot', u':', u'a', u'human', u'space', u'astronaut', ...], u'pos')
 print(documents[0])
 print(documents[1800])
@@ -181,8 +185,15 @@ def calculate_average(list):
 
 
 def scikit_classifiers(featureSet):
-	training_set = featureSet[:1900]
-	testing_set = featureSet[1900:]
+	#Vai testar em documentos positivos
+	#training_set = featureSet[:1900]
+	#testing_set = featureSet[1900:]
+
+	#Vai testar em documentos negativos
+	#Os 100 primeiros sao de teste e o resto de training
+	training_set = featureSet[100:]
+	testing_set = featureSet[:100]
+
 	start_time = time.time()
 
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
@@ -222,11 +233,11 @@ def scikit_classifiers(featureSet):
 	#bnb_time = time.time() - mnb_time
 	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 
-	SVC_classifier = SklearnClassifier(SVC())
-	SVC_classifier.train(training_set)
-	print("SVC accuracy:", (nltk.classify.accuracy(SVC_classifier, testing_set)) * 100)
-	#bnb_time = time.time() - mnb_time
-	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+	# SVC_classifier = SklearnClassifier(SVC())
+	# SVC_classifier.train(training_set)
+	# print("SVC accuracy:", (nltk.classify.accuracy(SVC_classifier, testing_set)) * 100)
+	# #bnb_time = time.time() - mnb_time
+	# print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 
 	LinearSVC_classifier = SklearnClassifier(LinearSVC())
 	LinearSVC_classifier.train(training_set)
@@ -240,6 +251,54 @@ def scikit_classifiers(featureSet):
 	#bnb_time = time.time() - mnb_time
 	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 
+	voted_classifier = VoteClassifier(classifier, MNB_classifier, BernoulliNB_classifier,
+						LogisticRegression_classifier, SGDClassifier_classifier, 
+						LinearSVC_classifier, NuSVC_classifier)
+	print("Voted_classifier accuracy:", (nltk.classify.accuracy(voted_classifier, testing_set)) * 100)
+	
+	print("Classification:", voted_classifier.classify(testing_set[0][0]), " Confidence %:", voted_classifier.confidence(testing_set[0][0]))
+	
+	print("Classification:", voted_classifier.classify(testing_set[1][0]), " Confidence %:", voted_classifier.confidence(testing_set[1][0]))
+	
+	print("Classification:", voted_classifier.classify(testing_set[2][0]), " Confidence %:", voted_classifier.confidence(testing_set[2][0]))
+	
+	print("Classification:", voted_classifier.classify(testing_set[3][0]), " Confidence %:", voted_classifier.confidence(testing_set[3][0]))
+	
+	print("Classification:", voted_classifier.classify(testing_set[4][0]), " Confidence %:", voted_classifier.confidence(testing_set[4][0]))
+	
+
+
+
+##########################################################
+#
+# Classe pra fazer a contagem dos votos de cada classifier e
+# dai tirar qual eh a categoria que eh mais provavel que seja
+#
+###########################################################
+
+class VoteClassifier(ClassifierI):
+	#Construtor
+	# Vamos passar uma lista de classifiers pra ele
+	def __init__(self, *classifiers):
+		self.classifiers = classifiers
+
+	def classify(self, features):
+		votes = []
+		for c in self.classifiers:
+			v = c.classify(features)
+			votes.append(v)
+		return mode(votes)
+
+	def confidence(self, features):
+		votes = []
+		for c in self.classifiers:
+			v = c.classify(features)
+			votes.append(v)
+
+		# Count how many times the popular votes has in the list
+		choice_votes = votes.count(mode(votes))
+		conf = float(choice_votes) / float(len(votes))
+		return conf
 
 ########################################################
 # Chamo um tipo de treinamento ou outro aqui
