@@ -6,10 +6,14 @@ from nltk.corpus import stopwords
 ## So pra contar o tempo gasto em cada execucao
 import time
 
+import pickle
+
 documents = []
 for category in movie_reviews.categories():
 	for fileid in movie_reviews.fileids(category):
 		documents.append((movie_reviews.words(fileid), category))
+
+random.shuffle(documents)
 
 # print(documents[0])
 # print('\n')
@@ -89,7 +93,7 @@ featureSet = [(find_features(rev), category) for (rev, category) in documents]
 # CALCULANDO A ACCURACY EM CADA ITERACAO E DPS CALCULA A MEDIA DE TODAS AS ACCURACIES
 ##################################################################################################
 
-
+classifier = None
 def simple_training(featureSet):
 	start_time = time.time()
 	#Tem 2000 movie_reviews entao 100 ficam para serem testados
@@ -100,7 +104,21 @@ def simple_training(featureSet):
 	#Usaremos o Naive Bayes pra treinar e testar
 	# Naive Bayes: posterior prob = prior occurence x likelihood / evidence
 
-	classifier = nltk.NaiveBayesClassifier.train(training_set)
+	# Dizendo que eu to pegando o classifier global pq senao ele so vai usar a variavel localmente
+	# global classifier
+	#classifier = nltk.NaiveBayesClassifier.train(training_set)
+
+	try:
+		classifier_f = open("naiveBayes.pickle", "rb")
+		print(type(classifier_f))
+		classifier = pickle.load(classifier_f)
+		print(type(classifier))
+		classifier_f.close()
+	except IOError:
+		print("Nao tem pickle ainda, vai usar o classifier")
+		global classifier
+		classifier = nltk.NaiveBayesClassifier.train(training_set)
+
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
 	classifier.show_most_informative_features(15)
 	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
@@ -137,20 +155,28 @@ def calculate_average(list):
 # Chamo um tipo de treinamento ou outro aqui
 #########################################################
 
-#simple_training(featureSet)
+simple_training(featureSet)
 
-acc_list = _10_fold_cross_validation(featureSet)
-print(acc_list)
-print(calculate_average(acc_list))
-
-
+# acc_list = _10_fold_cross_validation(featureSet)
+# print(acc_list)
+# print(calculate_average(acc_list))
 
 
 
 
+##########################################################
+# Vai usar Pickle para salvar os documentos e o classifier ja treinado
+# Pq se for usar varios algoritmos pra classificar e tiver q treinar toda vez vai consumir muito tempo
+# What pickle does is serialize, or de-serialize, python objects. This could be lists, dictionaries, or even things like our trained classifier!
 
-
-
+#Salvando o classifier no arquivo pickle
+print(type(classifier))
+save_classifier = open("naiveBayes.pickle", "wb")
+if classifier is not None:
+	pickle.dump(classifier, save_classifier)
+	save_classifier.close()
+else:
+	print("Classifier foi None e nao criou pickle file")
 
 # movie_reviews.words(fileid) volta todas as palavras com unicode, ou seja, u'plot' ao inves de 'plot'
 # com esse metodo abaixo a gnt pega cada palavra dentro do movie_reviews.words(fileid)
