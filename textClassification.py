@@ -187,14 +187,14 @@ def scikit_classifiers(featureSet):
 
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
-	nb_time = time.time() - start_time
-	print("--- Classifier executed in %s seconds ---" % nb_time)
+	#nb_time = time.time() - start_time
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 	
 	MNB_classifier = SklearnClassifier(MultinomialNB())
 	MNB_classifier.train(training_set)
 	print("MNB_classifier accuracy:", (nltk.classify.accuracy(MNB_classifier, testing_set)) * 100)
-	mnb_time = time.time() - nb_time
-	print("--- MNB_classifier executed in %s seconds ---" % mnb_time)
+	#mnb_time = time.time() - nb_time
+	print("--- MNB_classifier executed in %s seconds ---" % (time.time() - start_time))
 
 	# GaussianNB_classifier = SklearnClassifier(GaussianNB())
 	# GaussianNB_classifier.train(training_set)
@@ -203,9 +203,43 @@ def scikit_classifiers(featureSet):
 	BernoulliNB_classifier = SklearnClassifier(MultinomialNB())
 	BernoulliNB_classifier.train(training_set)
 	print("BernoulliNB_classifier accuracy:", (nltk.classify.accuracy(BernoulliNB_classifier, testing_set)) * 100)
-	bnb_time = time.time() - mnb_time
-	print("--- BernoulliNB_classifier executed in %s seconds ---" % bnb_time)
+	#bnb_time = time.time() - mnb_time
+	print("--- BernoulliNB_classifier executed in %s seconds ---" % (time.time() - start_time))
 	
+
+	#LogisticRegression, SGDClassifier
+	#SVC, LinearSVC, NuSVC
+
+	LogisticRegression_classifier = SklearnClassifier(LogisticRegression())
+	LogisticRegression_classifier.train(training_set)
+	print("LogisticRegression_classifier accuracy:", (nltk.classify.accuracy(LogisticRegression_classifier, testing_set)) * 100)
+	#bnb_time = time.time() - mnb_time
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+
+	SGDClassifier_classifier = SklearnClassifier(SGDClassifier())
+	SGDClassifier_classifier.train(training_set)
+	print("SGDClassifier accuracy:", (nltk.classify.accuracy(SGDClassifier_classifier, testing_set)) * 100)
+	#bnb_time = time.time() - mnb_time
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+
+	SVC_classifier = SklearnClassifier(SVC())
+	SVC_classifier.train(training_set)
+	print("SVC accuracy:", (nltk.classify.accuracy(SVC_classifier, testing_set)) * 100)
+	#bnb_time = time.time() - mnb_time
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+
+	LinearSVC_classifier = SklearnClassifier(LinearSVC())
+	LinearSVC_classifier.train(training_set)
+	print("LinearSVC accuracy:", (nltk.classify.accuracy(LinearSVC_classifier, testing_set)) * 100)
+	#bnb_time = time.time() - mnb_time
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+
+	NuSVC_classifier = SklearnClassifier(NuSVC())
+	NuSVC_classifier.train(training_set)
+	print("NuSVC accuracy:", (nltk.classify.accuracy(NuSVC_classifier, testing_set)) * 100)
+	#bnb_time = time.time() - mnb_time
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+
 
 ########################################################
 # Chamo um tipo de treinamento ou outro aqui
