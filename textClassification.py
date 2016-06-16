@@ -181,19 +181,34 @@ def calculate_average(list):
 #########################################################
 
 #Vai pedir pro usuario escolher entre o simple_training ou o cross_validation
-user_input = input("Escolha como vai ser o treinamento:" + "\n" + "1) Simple_training" + "\n" + "2) Cross validation ")
+# raw_input will parse any input as string
+# Isso pq to usando no Python 2.7 do laptop
+user_input = raw_input("Escolha como vai ser o treinamento:" + "\n" + "1) Simple_training" + "\n" + "2) Cross validation ")
 print(user_input)
 
 #So pra ser inicializada e poder defini-la no ELIF para poder coloca-la no Pickle file junto com o classifier do cross validation
 acc_list = None
 
-if user_input == 1:
-	simple_training(featureSet)
-elif user_input == 2:
-	global acc_list
-	acc_list = _10_fold_cross_validation(featureSet)
-	print(acc_list)
-	print(calculate_average(acc_list))
+#Convertendo pra int
+while type(user_input) is not int:	
+	try:
+		user_input = int(user_input)
+		
+	except ValueError:
+		#global user_input
+		user_input = raw_input("Digite:" + "\n" + "1) Simple_training" + "\n" + "2) Cross validation ")
+		print(user_input)
+		#Return to the start of the loop
+		# continue
+	else:
+		if user_input == 1:
+			simple_training(featureSet)
+		elif user_input == 2:
+			global acc_list
+			acc_list = _10_fold_cross_validation(featureSet)
+			print(acc_list)
+			print(calculate_average(acc_list))
+		break
 
 
 
