@@ -2,10 +2,14 @@ import nltk
 import random
 from nltk.corpus import movie_reviews
 from nltk.corpus import stopwords
+from nltk.classify.scikitlearn import SklearnClassifier
 
+
+from sklearn.naive_bayes import MultinomialNB, GaussianNB, BernoulliNB
+from sklearn.linear_model import LogisticRegression, SGDClassifier
+from sklearn.svm import SVC, LinearSVC, NuSVC
 ## So pra contar o tempo gasto em cada execucao
 import time
-
 import pickle
 
 
@@ -176,6 +180,33 @@ def calculate_average(list):
 		return acc_total/len(list)
 
 
+def scikit_classifiers(featureSet):
+	training_set = featureSet[:1900]
+	testing_set = featureSet[1900:]
+	start_time = time.time()
+
+	classifier = nltk.NaiveBayesClassifier.train(training_set)
+	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
+	nb_time = time.time() - start_time
+	print("--- Classifier executed in %s seconds ---" % nb_time)
+	
+	MNB_classifier = SklearnClassifier(MultinomialNB())
+	MNB_classifier.train(training_set)
+	print("MNB_classifier accuracy:", (nltk.classify.accuracy(MNB_classifier, testing_set)) * 100)
+	mnb_time = time.time() - nb_time
+	print("--- MNB_classifier executed in %s seconds ---" % mnb_time)
+
+	# GaussianNB_classifier = SklearnClassifier(GaussianNB())
+	# GaussianNB_classifier.train(training_set)
+	# print("GaussianNB_classifier accuracy:", (nltk.classify.accuracy(GaussianNB_classifier, testing_set)) * 100)
+	
+	BernoulliNB_classifier = SklearnClassifier(MultinomialNB())
+	BernoulliNB_classifier.train(training_set)
+	print("BernoulliNB_classifier accuracy:", (nltk.classify.accuracy(BernoulliNB_classifier, testing_set)) * 100)
+	bnb_time = time.time() - mnb_time
+	print("--- BernoulliNB_classifier executed in %s seconds ---" % bnb_time)
+	
+
 ########################################################
 # Chamo um tipo de treinamento ou outro aqui
 #########################################################
@@ -183,7 +214,8 @@ def calculate_average(list):
 #Vai pedir pro usuario escolher entre o simple_training ou o cross_validation
 # raw_input will parse any input as string
 # Isso pq to usando no Python 2.7 do laptop
-user_input = raw_input("Escolha como vai ser o treinamento:" + "\n" + "1) Simple_training" + "\n" + "2) Cross validation ")
+user_input = raw_input("Escolha como vai ser o treinamento:" + "\n" + "1) Simple_training" + "\n" + "2) Cross validation " +
+						"\n" + "3) Scikitlearn classifiers" + "\n")
 print(user_input)
 
 #So pra ser inicializada e poder defini-la no ELIF para poder coloca-la no Pickle file junto com o classifier do cross validation
@@ -196,7 +228,8 @@ while type(user_input) is not int:
 		
 	except ValueError:
 		#global user_input
-		user_input = raw_input("Digite:" + "\n" + "1) Simple_training" + "\n" + "2) Cross validation ")
+		user_input = raw_input("Escolha como vai ser o treinamento:" + "\n" + "1) Simple_training" + "\n" + "2) Cross validation " +
+						"\n" + "3) Scikitlearn classifiers" + "\n")
 		print(user_input)
 		#Return to the start of the loop
 		# continue
@@ -208,6 +241,8 @@ while type(user_input) is not int:
 			acc_list = _10_fold_cross_validation(featureSet)
 			print(acc_list)
 			print(calculate_average(acc_list))
+		elif user_input == 3:
+			scikit_classifiers(featureSet)
 		break
 
 
