@@ -107,7 +107,7 @@ def simple_training(featureSet):
 	# Dizendo que eu to pegando o classifier global pq senao ele so vai usar a variavel localmente
 	# global classifier
 	#classifier = nltk.NaiveBayesClassifier.train(training_set)
-
+	global classifier
 	try:
 		classifier_f = open("naiveBayes.pickle", "rb")
 		print(type(classifier_f))
@@ -116,7 +116,7 @@ def simple_training(featureSet):
 		classifier_f.close()
 	except IOError:
 		print("Nao tem pickle ainda, vai usar o classifier")
-		global classifier
+		#global classifier
 		classifier = nltk.NaiveBayesClassifier.train(training_set)
 
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
@@ -130,17 +130,32 @@ def _10_fold_cross_validation(featureSet):
 	num_folds = 10
 	subset_size = len(featureSet)/num_folds
 	accuracy_list = []
-	for i in range(num_folds):
-		testing_this_round = featureSet[i*subset_size:][:subset_size]
-		training_this_round = featureSet[:i*subset_size] + featureSet[(i+1)*subset_size:]
 
-		print("Round "+ str(i) +" : ")
-		print("Testing fold is: " + "featureSet[" +str(i*subset_size)+":"+str((i+1)*subset_size)+"]")
-		#print(len(testing_this_round))
-		#print(len(training_this_round))
-		classifier = nltk.NaiveBayesClassifier.train(training_this_round)
-		accuracy_list.append(((nltk.classify.accuracy(classifier, testing_this_round)) * 100))
-		print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+	global classifier
+	try:
+		classifier_f = open("naiveBayesCrossValidation.pickle", "rb")
+		print(type(classifier_f))
+		classifier = pickle.load(classifier_f)
+		#Pega o segundo obj que foi serializado, no caso eh a lista de accuracy
+		accuracy_list = pickle.load(classifier_f)
+		print(type(accuracy_list))
+		classifier_f.close()
+	except IOError:
+		print("Nao tem pickle ainda pra cross validation, vai usar o classifier")
+		# global classifier
+		# classifier = nltk.NaiveBayesClassifier.train(training_set)
+		for i in range(num_folds):
+			testing_this_round = featureSet[i*subset_size:][:subset_size]
+			training_this_round = featureSet[:i*subset_size] + featureSet[(i+1)*subset_size:]
+
+			print("Round "+ str(i) +" : ")
+			print("Testing fold is: " + "featureSet[" +str(i*subset_size)+":"+str((i+1)*subset_size)+"]")
+			#print(len(testing_this_round))
+			#print(len(training_this_round))
+			classifier = nltk.NaiveBayesClassifier.train(training_this_round)
+			accuracy_list.append(((nltk.classify.accuracy(classifier, testing_this_round)) * 100))
+			print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 	return accuracy_list
 
 
@@ -155,11 +170,20 @@ def calculate_average(list):
 # Chamo um tipo de treinamento ou outro aqui
 #########################################################
 
-simple_training(featureSet)
+#Vai pedir pro usuario escolher entre o simple_training ou o cross_validation
+user_input = input("Escolha como vai ser o treinamento:" + "\n" + "1) Simple_training" + "\n" + "2) Cross validation ")
+print(user_input)
 
-# acc_list = _10_fold_cross_validation(featureSet)
-# print(acc_list)
-# print(calculate_average(acc_list))
+#So pra ser inicializada e poder defini-la no ELIF para poder coloca-la no Pickle file junto com o classifier do cross validation
+acc_list = None
+
+if user_input == 1:
+	simple_training(featureSet)
+elif user_input == 2:
+	global acc_list
+	acc_list = _10_fold_cross_validation(featureSet)
+	#print(acc_list)
+	#print(calculate_average(acc_list))
 
 
 
@@ -171,12 +195,22 @@ simple_training(featureSet)
 
 #Salvando o classifier no arquivo pickle
 print(type(classifier))
-save_classifier = open("naiveBayes.pickle", "wb")
-if classifier is not None:
-	pickle.dump(classifier, save_classifier)
-	save_classifier.close()
-else:
-	print("Classifier foi None e nao criou pickle file")
+print(acc_list)
+if(user_input == 1):
+	save_classifier = open("naiveBayes.pickle", "wb")
+	if classifier is not None:
+		pickle.dump(classifier, save_classifier)
+		save_classifier.close()
+	else:
+		print("Classifier foi None e nao criou pickle file")
+elif(user_input == 2):
+	save_classifier = open("naiveBayesCrossValidation.pickle", "wb")
+	if classifier is not None:
+		pickle.dump(classifier, save_classifier)
+		pickle.dump(acc_list, save_classifier)
+		save_classifier.close()
+	else:
+		print("Classifier foi None e nao criou pickle file cross_validation")
 
 # movie_reviews.words(fileid) volta todas as palavras com unicode, ou seja, u'plot' ao inves de 'plot'
 # com esse metodo abaixo a gnt pega cada palavra dentro do movie_reviews.words(fileid)
