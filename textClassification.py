@@ -8,14 +8,17 @@ import time
 
 import pickle
 
+
+# Vou colocar todos os documentos 
 documents = []
 for category in movie_reviews.categories():
 	for fileid in movie_reviews.fileids(category):
 		documents.append((movie_reviews.words(fileid), category))
 
 random.shuffle(documents)
-
-# print(documents[0])
+#Retorna desse jeito: ([u'plot', u':', u'a', u'human', u'space', u'astronaut', ...], u'pos')
+print(documents[0])
+print(documents[1800])
 # print('\n')
 
 # Vai ver quais sao as words mais frequentes em todos os documentos
@@ -24,8 +27,10 @@ all_words = nltk.FreqDist(movie_reviews.words()) #retorna tuplas (words, frequen
 # Fazendo o stopwords nas palavras dos documentos pra tirar muita coisa inutil
 stop_words = set(stopwords.words("english"))
 
-all_words_no_stopwords = [w for w in movie_reviews.words() if w not in stop_words]
-all_words_no_stopwords = nltk.FreqDist(all_words_no_stopwords)
+	#Antes tava tirando as stopwords padrao do movie_reviews
+	#Mas agora nao precisa executar isso ja que estou adicionando mais no stopwords
+#all_words_no_stopwords = [w for w in movie_reviews.words() if w not in stop_words]
+#all_words_no_stopwords = nltk.FreqDist(all_words_no_stopwords)
 #print(all_words_no_stopwords.most_common(20))
 
 
@@ -36,8 +41,11 @@ punctuation = set(punctuation)
 new_stop_words = stop_words.union(punctuation)
 
 #Pegando todas as palavras do movie_reviews sem as stopwords
+stopwords_timer = time.time()
 all_words_no_stopwords = [w for w in movie_reviews.words() if w not in new_stop_words]
 all_words_no_stopwords = nltk.FreqDist(all_words_no_stopwords)
+print("--- Stopwords executed in %s seconds ---" % (time.time() - stopwords_timer))
+print('\n')
 print(all_words_no_stopwords.most_common(20))
 
 print(len(all_words_no_stopwords)) #Tem 39608 palavras
@@ -74,8 +82,10 @@ def find_features(document):
 #Vai retornar uma tupla com o dict dizendo que features o documento tem => {u'even': True, u'story': False, ...}
 # e que categoria esse dict de features representa
 # return: ({u'even': True, u'story': False, ...}, neg)
+features_timer = time.time()
 featureSet = [(find_features(rev), category) for (rev, category) in documents]
-
+print("--- Find_features executed in %s seconds ---" % (time.time() - features_timer))
+print('\n')
 
 ###########################################################################################
 # Agora que pegamos as tuplas com a representacao das features e categorias podemos treinar o algoritmo
@@ -182,8 +192,8 @@ if user_input == 1:
 elif user_input == 2:
 	global acc_list
 	acc_list = _10_fold_cross_validation(featureSet)
-	#print(acc_list)
-	#print(calculate_average(acc_list))
+	print(acc_list)
+	print(calculate_average(acc_list))
 
 
 
@@ -195,7 +205,7 @@ elif user_input == 2:
 
 #Salvando o classifier no arquivo pickle
 print(type(classifier))
-print(acc_list)
+#print(acc_list)
 if(user_input == 1):
 	save_classifier = open("naiveBayes.pickle", "wb")
 	if classifier is not None:
