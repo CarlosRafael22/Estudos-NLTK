@@ -11,26 +11,97 @@ from sklearn.svm import SVC, LinearSVC, NuSVC
 
 from nltk.classify import ClassifierI #inhirate from Classifier class
 from statistics import mode
-
+from nltk.tokenize import word_tokenize
 ## So pra contar o tempo gasto em cada execucao
 import time
 import pickle
 
-
-# Vou colocar todos os documentos 
+################################################################
+#
+# ESCOLHENDO SE VAI ANALISAR OS MOVIE_REVIEWS OU SHORT_REVIEWS
+#
+#################################################################
 documents = []
-for category in movie_reviews.categories():
-	for fileid in movie_reviews.fileids(category):
-		documents.append((movie_reviews.words(fileid), category))
+def movie_reviews_words():
 
-#random.shuffle(documents)
-#Retorna desse jeito: ([u'plot', u':', u'a', u'human', u'space', u'astronaut', ...], u'pos')
-print(documents[0])
-print(documents[1800])
-# print('\n')
+	# Vou colocar todos os documentos 
+	
+	for category in movie_reviews.categories():
+		for fileid in movie_reviews.fileids(category):
+			documents.append((movie_reviews.words(fileid), category))
 
-# Vai ver quais sao as words mais frequentes em todos os documentos
-all_words = nltk.FreqDist(movie_reviews.words()) #retorna tuplas (words, frequency)
+	#random.shuffle(documents)
+	#Retorna desse jeito: ([u'plot', u':', u'a', u'human', u'space', u'astronaut', ...], u'pos')
+	print(documents[0])
+	print(documents[1800])
+	# print('\n')
+
+	# Vai ver quais sao as words mais frequentes em todos os documentos
+	all_words = nltk.FreqDist(movie_reviews.words()) #retorna tuplas (words, frequency)
+	return all_words
+
+
+def short_reviews_words():
+
+	short_pos = open("positive.txt", "r").read()
+	short_neg = open("negative.txt", "r").read()
+	#documents = []
+	# for r in short_pos.readlines():
+	# 	documents.append((r, "pos"))
+	with open("positive.txt") as pos:
+		lines = pos.readlines()
+		for r in lines:
+			documents.append((r, "pos"))
+
+	# for r in short_neg.readlines():
+	# 	documents.append((r, "neg"))
+	with open("negative.txt") as neg:
+		lines = neg.readlines()
+		for r in lines:
+			documents.append((r, "neg"))
+
+	all_words = []
+	#Tokenize todas as palavras de pos e neg
+	# short_pos_words = word_tokenize(documents1)
+	# short_neg_words = word_tokenize(documents2)
+
+	# for w in short_pos_words:
+	# 	all_words.append(w.lower())
+
+	# for w in short_neg_words:
+	# 	all_words.append(w.lower())
+	print(documents[2])
+	all_lines = [lines[0] for lines in documents]
+	print(all_lines[1])
+	#Vai pegar cada linha e tokenizar pra dps juntar todas em all_words
+	
+	# for line in all_lines:
+	# 	all_words.append(word_tokenize(line))
+	print(word_tokenize(all_lines[1]))
+	# all_words = [word_tokenize(line) for line in all_lines]
+	# print(all_words[1])
+
+	#Vou transformar all_words em Set pq ai a ordem nao importa e 
+	#tem como fazer o JOIN e deixar todas as palavras em um mesmo array
+	all_words = set()
+	for line in all_lines:
+		line_tokenized = set(word_tokenize(line))
+		all_words.union(line_tokenized)
+	print(len(all_words))
+
+	all_words = nltk.FreqDist(all_words)
+	return all_words
+
+
+#################################
+# CHAMANDO AQUI
+all_words = movie_reviews_words()
+
+#all_words = short_reviews_words()
+
+
+######################################################################
+
 
 # Fazendo o stopwords nas palavras dos documentos pra tirar muita coisa inutil
 stop_words = set(stopwords.words("english"))
@@ -50,7 +121,8 @@ new_stop_words = stop_words.union(punctuation)
 
 #Pegando todas as palavras do movie_reviews sem as stopwords
 stopwords_timer = time.time()
-all_words_no_stopwords = [w for w in movie_reviews.words() if w not in new_stop_words]
+#all_words_no_stopwords = [w for w in movie_reviews.words() if w not in new_stop_words]
+all_words_no_stopwords = [w for w in all_words if w not in new_stop_words]
 all_words_no_stopwords = nltk.FreqDist(all_words_no_stopwords)
 print("--- Stopwords executed in %s seconds ---" % (time.time() - stopwords_timer))
 print('\n')
@@ -186,13 +258,21 @@ def calculate_average(list):
 
 def scikit_classifiers(featureSet):
 	#Vai testar em documentos positivos
-	#training_set = featureSet[:1900]
-	#testing_set = featureSet[1900:]
+
+	#Pra nao ter os neg e pos separados certinhos
+	random.shuffle(featureSet)
+
+	#Esse eh pro short_review databse
+	# training_set = featureSet[:10000]
+	# testing_set = featureSet[10000:]
+
+	training_set = featureSet[:1900]
+	testing_set = featureSet[1900:]
 
 	#Vai testar em documentos negativos
 	#Os 100 primeiros sao de teste e o resto de training
-	training_set = featureSet[100:]
-	testing_set = featureSet[:100]
+	#training_set = featureSet[100:]
+	#testing_set = featureSet[:100]
 
 	start_time = time.time()
 
