@@ -1,3 +1,4 @@
+# coding: utf-8
 import nltk
 import random
 from nltk.corpus import stopwords
@@ -20,6 +21,7 @@ from nltk.tokenize import TweetTokenizer
 ########################################################
 
 tknzr = TweetTokenizer()
+new_stop_words = set()
 
 def reduce_tweets_words():
 
@@ -28,6 +30,8 @@ def reduce_tweets_words():
 	# ([u'RT', u'@mpvine', u':', u'If', u'fifty', u'million', u'people', u'say', u'a', 
 	# u'foolish', u'thing', u',', u"it's", u'still', u'a', u'foolish', u'thing', u'.'], 'pos')
 	tokenized_tweets = []
+
+	# Tem 2853 no FeatureSet, sendo: 1286 Stay e 1567 Leave
 	with open("StayTweets1.txt") as pos:
 		lines = pos.readlines()
 		print(len(lines))
@@ -42,6 +46,8 @@ def reduce_tweets_words():
 
 	with open("LeaveTweets1.txt") as neg:
 		lines = neg.readlines()
+		#PQ TEM 1286 Stay e 1567 Leave AI DEIXA IGUAL
+		lines = lines[:1286]
 		print(len(lines))
 		for l in lines:
 			l = l.decode('unicode_escape').encode('ascii','ignore')
@@ -69,6 +75,7 @@ def reduce_tweets_words():
 	punctuation = [u'.', u'-', u',', u'"', u'(', u')', u':', u'?', u"'", u'--', u';', 
 	u'!', u'$', u'*', u'&', u'...']
 	punctuation = set(punctuation)
+	global new_stop_words
 	new_stop_words = stop_words.union(punctuation)
 
 	twitter_symbols = [u'RT']
@@ -142,6 +149,35 @@ def reduce_tweets_words():
   	return filtered_tweets
 
 
+#############################################################################
+# SO PRA REDUZIR UM NOVO TWEET QUE FORMOS CLASSIFICAR ISOLADAMENTE
+def reduce_tweet(tweet_text):
+	tweet_text = tweet_text.decode('unicode_escape').encode('ascii','ignore')
+	text_tokenized = tknzr.tokenize(tweet_text)
+	print(text_tokenized)
+
+	user_rt_pattern = "@\w+?"
+	url_pattern = 'http[s]:/'
+	emotions_pattern = '\u\d+'
+
+	tokens_to_be_removed = []
+	for token in text_tokenized:
+		if token in new_stop_words or re.match(url_pattern, token) or re.search(user_rt_pattern, token) or re.match(emotions_pattern, token):
+				tokens_to_be_removed.append(token)
+				print(tokens_to_be_removed)
+
+	#Vi todos os tokens q eram pra ser removidos desse tweet
+	#Agora vou remove-los
+	for token in tokens_to_be_removed:
+		text_tokenized.remove(token)
+
+	print('\n')
+	print(text_tokenized)
+	print('\n')
+
+	return text_tokenized
+
+##############################################################################
 
 def getTop_tweet_words(filtered_tweets):
 
@@ -164,8 +200,8 @@ def getTop_tweet_words(filtered_tweets):
   	print(all_tweets_words[1230:1240])
   	print('\n')
   	all_tweets_words = nltk.FreqDist(all_tweets_words)
-  	print(all_tweets_words.most_common(20))
-
+  	print(all_tweets_words.most_common(50))
+  	print('\n')
   	top_tweets_words = all_tweets_words.most_common(2000)
 	print(top_tweets_words[1800:1805])
 
@@ -185,12 +221,40 @@ def find_features(tweet):
 	# vai ser o dict dizendo quais palavras, de todas as tidas como mais importantes, estao presentes nese tweet
 	features = {}
 	#print(top_word_features_keys[:20])
-	for w in top_tweets_features[:30]:
+	for w in top_tweets_features:
 		features[w] = (w in tweet_words)
-		if(w in tweet_words):
-			print(w)
+		# if(w in tweet_words):
+		# 	print(w)
 
 	return features
+
+######################################################################################
+#
+# AGORA QUE TEMOS OS TWEETS REPRESENTADOS PELAS FEATURES QUE TEM E SUA CATEGORIA
+# ({u':/': False, u'#LeaveEU': False, u'#ITV': False, u'#VoteLeave': False, u'#EU': 
+# False, u'https': False, u'#UK': False, u'I': False, u'#BBC': False, u'#DavidCameron': False, 
+# u'#Brexit': True, u'#StrongerIn': False, u'EU': False, u'The': False, u"Don't": False, 
+# u'#EUref': True, u'#SKY': False, u'future': False, u'#BREXIT': False, u'UK': False, 
+# u'#VoteRemain': True, u'If': False}, 'pos')
+#
+# IREMOS USA-LOS NO TREINAMENTO DO CLASSIFICADOR
+######################################################################################
+
+
+def avaliate_classifiers(featureSet):
+	random.shuffle(featureSet)
+
+	# Tem 2572 no FeatureSet, sendo: 1286 Stay e 1286 Leave
+	training_set = featureSet[:2400]
+	testing_set = featureSet[2400:]
+
+	start_time = time.time()
+
+	global classifier
+	classifier = nltk.NaiveBayesClassifier.train(training_set)
+	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
+	#nb_time = time.time() - start_time
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 
 
 
@@ -211,4 +275,18 @@ top_tweets_features = getTop_tweet_words(filtered_tweets)
 # filtered_tweets tem a tupla ([u'@mpvine', u'If', u'fifty', u'million', u'people', u'say',
 # u'foolish', u'thing', u"it's", u'still', u'foolish', u'thing'], 'pos')) --> (tweet, category)
 featureSet = [(find_features(tweet), category) for (tweet, category) in filtered_tweets]
-print(featureSet[50])
+#print(featureSet[2])
+print(len(featureSet))
+
+classifier = None
+avaliate_classifiers(featureSet)
+
+print('\n')
+#new_tweet = reduce_tweet("Sunday Telegraph officially endorses Brexit: 'EU belongs to the past, let's embrace future' http://www.telegraph.co.uk/opinion/2016/06/18/we-must-vote-leave-to-create-a-britain-fit-for-the-future/ …")
+#new_tweet = reduce_tweet("Come on guys! Finial push for #Brexit I will be fighting tooth and nail to ensure we the people secure our children's futures! Time is NOW")
+#new_tweet = reduce_tweet("#VoteRemain so we can continue to sign South American wonderkids with European passports on @FootballManager. Cheers")
+new_tweet = reduce_tweet("Even the dogs of Bristol are voting to Remain - they know that leaving is barking mad! 🐶 ")
+
+print(new_tweet)
+new_tweet_feats = find_features(new_tweet)
+print("Naive Bayes Result: ", (classifier.classify(new_tweet_feats)))
