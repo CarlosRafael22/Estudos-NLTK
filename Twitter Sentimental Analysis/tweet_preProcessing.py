@@ -64,6 +64,10 @@ while len(documents_stay) < 1000:
 		TOKENIZE ALL TWEETS
 		"""
 		tweet = item['text']
+		#Sunstitui a quebra de linha por espaco
+		tweet = tweet.replace('\n', ' ')
+		#Pra replace muitos espacos em branco por um unico
+		tweet = ' '.join(tweet.split())
 		documents_stay.append(tweet)
 
 
@@ -77,7 +81,7 @@ while len(documents_stay) < 1000:
 	time.sleep(3)
 
 print(documents_stay[35])
-with open('StayTweets1.txt', 'w') as outfile:
+with open('StayTweets2.txt', 'w') as outfile:
 	for item in documents_stay:
 		#Pra ver se resolve o problema de
 		#UnicodeEncodeError: 'ascii' codec can't encode character u'\u2026'
@@ -110,6 +114,10 @@ while len(documents_leave) < 1000:
 		TOKENIZE ALL TWEETS
 		"""
 		tweet = item['text']
+		#Sunstitui a quebra de linha por espaco
+		tweet = tweet.replace('\n', ' ')
+		#Pra replace muitos espacos em branco por um unico
+		tweet = ' '.join(tweet.split())
 		documents_leave.append(tweet)
 
 
@@ -123,7 +131,7 @@ while len(documents_leave) < 1000:
 	time.sleep(3)
 
 #print(documents_leave[35])
-with open('LeaveTweets1.txt', 'w') as outfile:
+with open('LeaveTweets2.txt', 'w') as outfile:
 	for item in documents_leave:
   		outfile.write("%s\n" % item.encode('utf-8'))
 # stop_words = set(stopwords.words("english"))

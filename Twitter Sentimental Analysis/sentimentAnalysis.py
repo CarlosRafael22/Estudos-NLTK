@@ -16,7 +16,7 @@ import time
 import pickle
 
 import re
-from nltk.tokenize import TweetTokenizer
+from nltk.tokenize import TweetTokenizer, word_tokenize
 
 ########################################################
 
@@ -38,11 +38,34 @@ def reduce_tweets_words():
 		for l in lines:
 			#Pra tirar se tiver emotions no formato /u2026 por exemplo
 			l = l.decode('unicode_escape').encode('ascii','ignore')
-			l = tknzr.tokenize(l)
+			tokens = tknzr.tokenize(l)
 			#Pega cada token e bota em minuscula
-			for w in l:
-				w = w.lower()
-			tokenized_tweets.append((l, "pos"))
+			lw_tokens = [w.lower() for w in tokens]
+			tokenized_tweets.append((lw_tokens, "pos"))
+
+	with open("StayTweetsDate.txt") as pos:
+		lines = pos.readlines()
+		print(len(lines))
+		for l in lines:
+			#Pra tirar se tiver emotions no formato /u2026 por exemplo
+			l = l.decode('unicode_escape').encode('ascii','ignore')
+			tokens = tknzr.tokenize(l)
+			#Pega cada token e bota em minuscula
+			lw_tokens = [w.lower() for w in tokens]
+			tokenized_tweets.append((lw_tokens, "pos"))
+
+	with open("StayTweetsDate2.txt") as pos:
+		lines = pos.readlines()
+		print(len(lines))
+		for l in lines:
+			#Pra tirar se tiver emotions no formato /u2026 por exemplo
+			l = l.decode('unicode_escape').encode('ascii','ignore')
+			tokens = tknzr.tokenize(l)
+			#Pega cada token e bota em minuscula
+			lw_tokens = [w.lower() for w in tokens]
+			tokenized_tweets.append((lw_tokens, "pos"))
+
+	###########################################################################################
 
 	with open("LeaveTweets1.txt") as neg:
 		lines = neg.readlines()
@@ -51,10 +74,30 @@ def reduce_tweets_words():
 		print(len(lines))
 		for l in lines:
 			l = l.decode('unicode_escape').encode('ascii','ignore')
-			l = tknzr.tokenize(l)
-			for w in l:
-				w = w.lower()
-			tokenized_tweets.append((l, "neg"))
+			tokens = tknzr.tokenize(l)
+			#Pega cada token e bota em minuscula
+			lw_tokens = [w.lower() for w in tokens]
+			tokenized_tweets.append((lw_tokens, "neg"))
+
+	with open("LeaveTweetsDate.txt") as neg:
+		lines = neg.readlines()
+		print(len(lines))
+		for l in lines:
+			l = l.decode('unicode_escape').encode('ascii','ignore')
+			tokens = tknzr.tokenize(l)
+			#Pega cada token e bota em minuscula
+			lw_tokens = [w.lower() for w in tokens]
+			tokenized_tweets.append((lw_tokens, "neg"))
+
+	with open("LeaveTweetsDate2.txt") as neg:
+		lines = neg.readlines()
+		print(len(lines))
+		for l in lines:
+			l = l.decode('unicode_escape').encode('ascii','ignore')
+			tokens = tknzr.tokenize(l)
+			#Pega cada token e bota em minuscula
+			lw_tokens = [w.lower() for w in tokens]
+			tokenized_tweets.append((lw_tokens, "neg"))
 
 	all_words = []
 	print(tokenized_tweets[3])
@@ -78,15 +121,18 @@ def reduce_tweets_words():
 	global new_stop_words
 	new_stop_words = stop_words.union(punctuation)
 
-	twitter_symbols = [u'RT']
+	twitter_symbols = [u'rt']
 	twitter_symbols = set(twitter_symbols)
 	new_stop_words = new_stop_words.union(twitter_symbols)
 
 	# NA VERDADE NAO TO CONSEGUINDO TIRAR O @USER DO RT MAS ISSO
 	# NAO VAI INTERFERIR POIS A FREQUENCIA DE SE TER UM @USER DO MESMO USER EH POUCA
-	user_rt_pattern = "@\w+?"
-	url_pattern = 'http[s]:/'
+	#user_rt_pattern = "@\w+?"
+	#url_pattern = 'http[s]:/'
 	emotions_pattern = '\u\d+'
+	url_pattern = 'http[s]?://(?:[a-z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-f][0-9a-f]))+'
+	user_rt_pattern = '(?:@[\w_]+)'
+    #user_rt_pattern = '(?:@[\w_]+)'
 
 	match = re.match(emotions_pattern, 'asfasdf \u2026 alo filho')
 	s = 'This is Some \u03c0 text that Has to be Cleaned\u2026! it\u0027s Annoying!'
@@ -141,7 +187,7 @@ def reduce_tweets_words():
 
 
 	#Arquivo com as novas tuplas dos tweets filtrados
-	with open('FilteredTweets.txt', 'w') as outfile:
+	with open('FilteredTweets2.txt', 'w') as outfile:
 		for item in filtered_tweets:
   			outfile.write(str(item) + '\n')
 
@@ -154,11 +200,16 @@ def reduce_tweets_words():
 def reduce_tweet(tweet_text):
 	tweet_text = tweet_text.decode('unicode_escape').encode('ascii','ignore')
 	text_tokenized = tknzr.tokenize(tweet_text)
+	#Botando em minuscula pra nao ter diferenca
+	text_tokenized = [w.lower() for w in text_tokenized]
 	print(text_tokenized)
 
-	user_rt_pattern = "@\w+?"
-	url_pattern = 'http[s]:/'
+	#user_rt_pattern = "@\w+?"
+	#url_pattern = 'http[s]:/'
 	emotions_pattern = '\u\d+'
+	url_pattern = 'http[s]?://(?:[a-z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-f][0-9a-f]))+'
+	user_rt_pattern = '(?:@[\w_]+)'
+    #user_rt_pattern = '(?:@[\w_]+)'
 
 	tokens_to_be_removed = []
 	for token in text_tokenized:
@@ -203,7 +254,7 @@ def getTop_tweet_words(filtered_tweets):
   	print(all_tweets_words.most_common(50))
   	print('\n')
   	top_tweets_words = all_tweets_words.most_common(2000)
-	print(top_tweets_words[1800:1805])
+	#print(top_tweets_words[1800:1805])
 
 
 	#Como top_tweets_words retorna (word,freq) iremos pegar so as palavras que sao as keys
@@ -245,15 +296,15 @@ def avaliate_classifiers(featureSet):
 	random.shuffle(featureSet)
 
 	# Tem 2572 no FeatureSet, sendo: 1286 Stay e 1286 Leave
-	training_set = featureSet[:2400]
-	testing_set = featureSet[2400:]
+	training_set = featureSet[:2750]
+	testing_set = featureSet[2750:]
 
 	start_time = time.time()
 
 	global classifier
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
-	#nb_time = time.time() - start_time
+	classifier.show_most_informative_features(15)
 	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 
 
@@ -282,11 +333,7 @@ classifier = None
 avaliate_classifiers(featureSet)
 
 print('\n')
-#new_tweet = reduce_tweet("Sunday Telegraph officially endorses Brexit: 'EU belongs to the past, let's embrace future' http://www.telegraph.co.uk/opinion/2016/06/18/we-must-vote-leave-to-create-a-britain-fit-for-the-future/ …")
-#new_tweet = reduce_tweet("Come on guys! Finial push for #Brexit I will be fighting tooth and nail to ensure we the people secure our children's futures! Time is NOW")
-#new_tweet = reduce_tweet("#VoteRemain so we can continue to sign South American wonderkids with European passports on @FootballManager. Cheers")
-new_tweet = reduce_tweet("Even the dogs of Bristol are voting to Remain - they know that leaving is barking mad! 🐶 ")
-
+new_tweet = reduce_tweet("Sad to hear that some parents (but not most) are going to #VoteLeave leaving the childrens future to chance in #Timperley. #VoteRemain 1 retweet 0 likes ")
 print(new_tweet)
 new_tweet_feats = find_features(new_tweet)
 print("Naive Bayes Result: ", (classifier.classify(new_tweet_feats)))
