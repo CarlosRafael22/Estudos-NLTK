@@ -18,6 +18,9 @@ import pickle
 import re
 from nltk.tokenize import TweetTokenizer, word_tokenize
 
+import collections
+from nltk.metrics import precision, recall, f_measure
+
 ########################################################
 
 tknzr = TweetTokenizer()
@@ -100,7 +103,8 @@ def reduce_tweets_words():
 			tokenized_tweets.append((lw_tokens, "neg"))
 
 	all_words = []
-	print(tokenized_tweets[3])
+	print(tokenized_tweets[1486])
+	print(tokenized_tweets[1483:1486])
 
 	#############################################################################
 	#
@@ -293,11 +297,34 @@ def find_features(tweet):
 
 
 def avaliate_classifiers(featureSet):
-	random.shuffle(featureSet)
+	#random.shuffle(featureSet)
 
-	# Tem 2572 no FeatureSet, sendo: 1286 Stay e 1286 Leave
-	training_set = featureSet[:2750]
-	testing_set = featureSet[2750:]
+	# #Tem 2972 tweets no total
+	# training_set = featureSet[:2750]
+	# testing_set = featureSet[2750:]
+
+	#Vai fazer o calculo de recall e precision
+	# You need to build 2 sets for each classification label:
+	# a reference set of correct values, and a test set of observed values.
+
+	#Os primeiros 1486 tweets sao positivos
+	positive_tweets = featureSet[:1486]
+	negative_tweets = featureSet[1486:]
+
+	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
+	pos_cutoff = len(positive_tweets)*3/4
+	neg_cutoff = len(negative_tweets)*3/4
+
+	# 75% dos tweets vao pra ser de referencia(treinamento) e o resto pra teste
+	pos_references = positive_tweets[:pos_cutoff]
+	pos_tests = positive_tweets[pos_cutoff:]
+
+	neg_references = negative_tweets[:neg_cutoff]
+	neg_tests = negative_tweets[neg_cutoff:]
+
+	#COnjunto de treinamento e de testes pra calcular a accuracy
+	training_set = pos_references + neg_references
+	testing_set = pos_tests + neg_tests
 
 	start_time = time.time()
 
@@ -305,6 +332,23 @@ def avaliate_classifiers(featureSet):
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
 	classifier.show_most_informative_features(15)
+
+	refsets = collections.defaultdict(set)
+	testsets = collections.defaultdict(set)
+	 
+	for i, (feats, label) in enumerate(testing_set):
+	    refsets[label].add(i)
+	    observed = classifier.classify(feats)
+	    testsets[observed].add(i)
+	 
+	print 'pos precision:', precision(refsets['pos'], testsets['pos'])
+	print 'pos recall:', recall(refsets['pos'], testsets['pos'])
+	print 'pos F-measure:', f_measure(refsets['pos'], testsets['pos'])
+	print 'neg precision:', precision(refsets['neg'], testsets['neg'])
+	print 'neg recall:', recall(refsets['neg'], testsets['neg'])
+	print 'neg F-measure:', f_measure(refsets['neg'], testsets['neg'])
+
+
 	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 
 
