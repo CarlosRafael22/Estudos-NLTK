@@ -29,8 +29,8 @@ api = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secre
 GET TWEETs
 """
 #queries
-query_stay = '#VoteStay OR #VoteRemain OR (Brexit AND :()'
-query_leave = '#LeaveEu OR #VoteLeave'
+query_stay = '#VoteStay OR #VoteRemain -#VoteLeave'
+query_leave = '#LeaveEu OR #VoteLeave -#VoteRemain'
 
 #tweets collected
 documents_stay = []
@@ -81,7 +81,7 @@ while len(documents_stay) < 1000:
 	time.sleep(3)
 
 print(documents_stay[35])
-with open('StayTweets2.txt', 'w') as outfile:
+with open('StayTweetsNow.txt', 'w') as outfile:
 	for item in documents_stay:
 		#Pra ver se resolve o problema de
 		#UnicodeEncodeError: 'ascii' codec can't encode character u'\u2026'
@@ -131,7 +131,7 @@ while len(documents_leave) < 1000:
 	time.sleep(3)
 
 #print(documents_leave[35])
-with open('LeaveTweets2.txt', 'w') as outfile:
+with open('LeaveTweetsNow.txt', 'w') as outfile:
 	for item in documents_leave:
   		outfile.write("%s\n" % item.encode('utf-8'))
 # stop_words = set(stopwords.words("english"))

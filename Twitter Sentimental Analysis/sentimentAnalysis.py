@@ -25,6 +25,20 @@ from nltk.metrics import precision, recall, f_measure
 
 tknzr = TweetTokenizer()
 new_stop_words = set()
+tokenized_tweets = []
+
+def openFile_getTokenizedTweets(filename, category):
+	with open(filename) as doc:
+		lines = doc.readlines()
+		print(len(lines))
+		for l in lines:
+			#Pra tirar se tiver emotions no formato /u2026 por exemplo
+			l = l.decode('unicode_escape').encode('ascii','ignore')
+			tokens = tknzr.tokenize(l)
+			global tokenized_tweets
+			#Pega cada token e bota em minuscula
+			lw_tokens = [w.lower() for w in tokens]
+			tokenized_tweets.append((lw_tokens, category))
 
 def reduce_tweets_words():
 
@@ -32,79 +46,48 @@ def reduce_tweets_words():
 	# (Twitter_tokenizado , categoria_twitter)
 	# ([u'RT', u'@mpvine', u':', u'If', u'fifty', u'million', u'people', u'say', u'a', 
 	# u'foolish', u'thing', u',', u"it's", u'still', u'a', u'foolish', u'thing', u'.'], 'pos')
-	tokenized_tweets = []
+	
 
 	# Tem 2853 no FeatureSet, sendo: 1286 Stay e 1567 Leave
-	with open("StayTweets1.txt") as pos:
-		lines = pos.readlines()
-		print(len(lines))
-		for l in lines:
-			#Pra tirar se tiver emotions no formato /u2026 por exemplo
-			l = l.decode('unicode_escape').encode('ascii','ignore')
-			tokens = tknzr.tokenize(l)
-			#Pega cada token e bota em minuscula
-			lw_tokens = [w.lower() for w in tokens]
-			tokenized_tweets.append((lw_tokens, "pos"))
+	openFile_getTokenizedTweets("StayTweets1.txt", "pos")
+	openFile_getTokenizedTweets("StayTweetsDate.txt", "pos")
+	openFile_getTokenizedTweets("StayTweetsDate2.txt", "pos")
+	openFile_getTokenizedTweets("StayJune15.txt", "pos")
+	openFile_getTokenizedTweets("StayJune16.txt", "pos")
+	openFile_getTokenizedTweets("StayJune17.txt", "pos")
+	openFile_getTokenizedTweets("StayJune18.txt", "pos")
+	openFile_getTokenizedTweets("StayJune19.txt", "pos")
+	openFile_getTokenizedTweets("StayJune20.txt", "pos")
+	openFile_getTokenizedTweets("StayTweetsNow.txt", "pos")
 
-	with open("StayTweetsDate.txt") as pos:
-		lines = pos.readlines()
-		print(len(lines))
-		for l in lines:
-			#Pra tirar se tiver emotions no formato /u2026 por exemplo
-			l = l.decode('unicode_escape').encode('ascii','ignore')
-			tokens = tknzr.tokenize(l)
-			#Pega cada token e bota em minuscula
-			lw_tokens = [w.lower() for w in tokens]
-			tokenized_tweets.append((lw_tokens, "pos"))
-
-	with open("StayTweetsDate2.txt") as pos:
-		lines = pos.readlines()
-		print(len(lines))
-		for l in lines:
-			#Pra tirar se tiver emotions no formato /u2026 por exemplo
-			l = l.decode('unicode_escape').encode('ascii','ignore')
-			tokens = tknzr.tokenize(l)
-			#Pega cada token e bota em minuscula
-			lw_tokens = [w.lower() for w in tokens]
-			tokenized_tweets.append((lw_tokens, "pos"))
-
+	print(len(tokenized_tweets))
 	###########################################################################################
 
-	with open("LeaveTweets1.txt") as neg:
-		lines = neg.readlines()
-		#PQ TEM 1286 Stay e 1567 Leave AI DEIXA IGUAL
+	#Too fazendo isso pra pegar so os 1286 primeiros desse arquivo q tem 1537
+	with open("LeaveTweets1.txt") as doc:
+		lines = doc.readlines()
 		lines = lines[:1286]
 		print(len(lines))
 		for l in lines:
+			#Pra tirar se tiver emotions no formato /u2026 por exemplo
 			l = l.decode('unicode_escape').encode('ascii','ignore')
 			tokens = tknzr.tokenize(l)
+			global tokenized_tweets
 			#Pega cada token e bota em minuscula
 			lw_tokens = [w.lower() for w in tokens]
 			tokenized_tweets.append((lw_tokens, "neg"))
 
-	with open("LeaveTweetsDate.txt") as neg:
-		lines = neg.readlines()
-		print(len(lines))
-		for l in lines:
-			l = l.decode('unicode_escape').encode('ascii','ignore')
-			tokens = tknzr.tokenize(l)
-			#Pega cada token e bota em minuscula
-			lw_tokens = [w.lower() for w in tokens]
-			tokenized_tweets.append((lw_tokens, "neg"))
-
-	with open("LeaveTweetsDate2.txt") as neg:
-		lines = neg.readlines()
-		print(len(lines))
-		for l in lines:
-			l = l.decode('unicode_escape').encode('ascii','ignore')
-			tokens = tknzr.tokenize(l)
-			#Pega cada token e bota em minuscula
-			lw_tokens = [w.lower() for w in tokens]
-			tokenized_tweets.append((lw_tokens, "neg"))
+	openFile_getTokenizedTweets("LeaveTweetsDate.txt", "neg")
+	openFile_getTokenizedTweets("LeaveTweetsDate2.txt", "neg")
+	openFile_getTokenizedTweets("LeaveJune15.txt", "neg")
+	openFile_getTokenizedTweets("LeaveJune16.txt", "neg")
+	openFile_getTokenizedTweets("LeaveJune17.txt", "neg")
+	openFile_getTokenizedTweets("LeaveJune18.txt", "neg")
+	openFile_getTokenizedTweets("LeaveJune19.txt", "neg")
+	openFile_getTokenizedTweets("LeaveJune20.txt", "neg")
+	openFile_getTokenizedTweets("LeaveTweetsNow.txt", "neg")
 
 	all_words = []
-	print(tokenized_tweets[1486])
-	print(tokenized_tweets[1483:1486])
 
 	#############################################################################
 	#
@@ -125,7 +108,7 @@ def reduce_tweets_words():
 	global new_stop_words
 	new_stop_words = stop_words.union(punctuation)
 
-	twitter_symbols = [u'rt']
+	twitter_symbols = [u'rt', u'#voteleave', u'#voteremain', u'#leaveeu', u'h', u'#rt', u'=', u'@']
 	twitter_symbols = set(twitter_symbols)
 	new_stop_words = new_stop_words.union(twitter_symbols)
 
@@ -307,9 +290,9 @@ def avaliate_classifiers(featureSet):
 	# You need to build 2 sets for each classification label:
 	# a reference set of correct values, and a test set of observed values.
 
-	#Os primeiros 1486 tweets sao positivos
-	positive_tweets = featureSet[:1486]
-	negative_tweets = featureSet[1486:]
+	#Os primeiros 6686 tweets sao positivos e resto(6757) negativo
+	positive_tweets = featureSet[:6687]
+	negative_tweets = featureSet[6687:13373] #resto(6757)
 
 	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
 	pos_cutoff = len(positive_tweets)*3/4
@@ -331,7 +314,7 @@ def avaliate_classifiers(featureSet):
 	global classifier
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
-	classifier.show_most_informative_features(15)
+	classifier.show_most_informative_features(50)
 
 	refsets = collections.defaultdict(set)
 	testsets = collections.defaultdict(set)
@@ -377,7 +360,8 @@ classifier = None
 avaliate_classifiers(featureSet)
 
 print('\n')
-new_tweet = reduce_tweet("Sad to hear that some parents (but not most) are going to #VoteLeave leaving the childrens future to chance in #Timperley. #VoteRemain 1 retweet 0 likes ")
+#new_tweet = reduce_tweet("Sad to hear that some parents (but not most) are going to #VoteLeave leaving the childrens future to chance in #Timperley. #VoteRemain 1 retweet 0 likes ")
+new_tweet = reduce_tweet("Brexit is basically a referendum on how white people in the UK feel about minorities: http://bit.ly/28SyaDW ")
 print(new_tweet)
 new_tweet_feats = find_features(new_tweet)
 print("Naive Bayes Result: ", (classifier.classify(new_tweet_feats)))
