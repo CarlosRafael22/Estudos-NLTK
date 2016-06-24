@@ -46,8 +46,8 @@ collect 'stay' tweets
 """
 stay_max_id = 99999999999999999999999999999
 def get_stay_tweets():
-	while len(documents_stay) < 650:
-		stay_results = api.request('search/tweets', {'q':query_stay,'lang':'en','count':'100','until':'2016-06-15','max_id':str(stay_max_id),'include_entities':'false'})
+	while len(documents_stay) < 500:
+		stay_results = api.request('search/tweets', {'q':query_stay,'lang':'en','count':'100','until':'2016-06-10','max_id':str(stay_max_id),'include_entities':'false'})
 
 		print(type(stay_results))
 
@@ -82,8 +82,8 @@ def get_stay_tweets():
 
 leave_max_id = 99999999999999999999999999999
 def get_leave_tweets():
-	while len(documents_leave) < 650:
-		leave_results = api.request('search/tweets', {'q':query_leave,'lang':'en','count':'100','until':'2016-06-15','max_id':str(leave_max_id),'include_entities':'false'})
+	while len(documents_leave) < 500:
+		leave_results = api.request('search/tweets', {'q':query_leave,'lang':'en','count':'100','until':'2016-06-10','max_id':str(leave_max_id),'include_entities':'false'})
 
 		print(leave_results)
 
@@ -115,38 +115,40 @@ def get_leave_tweets():
 			#UnicodeEncodeError: 'ascii' codec can't encode character u'\u2026'
 	  		outfile.write("%s\n" % item.encode('utf-8'))
 
-#get_stay_tweets()
-#get_leave_tweets()
-s0 = "Vote"
-s1 = "tp://tinyurl.com/of9l2py Why there's little hope for Greece's unemployed &amp; why they'll seek jobs in UK. #VoteLeave https://t.co/zUG8XBS9e8"
-s2 = "tp://tinyurl.com/of9l2py Why there's little hope for Greece's unemployed &amp; why they'll seek jobs in UK. #VoteLeave https://t.co/ZvAvbRYq43"
-
-def compare_similarity_tweets(new_tweet, old_tweet):
-	len_tweet1 = len(new_tweet.split())
-	len_tweet2 = len(old_tweet.split())
-
-	words_in_common = 0
-	for word in new_tweet.split():
-		if word in old_tweet:
-			words_in_common = words_in_common + 1
-
-	print(words_in_common)
-	print(len_tweet2)
-	print(float(words_in_common)/float(len_tweet2))
-	#Se as palavras do primeiro tweet ter quantidade maior do que 70% do segundo tweet
-	#Entao provavelmente sao iguais e retornamos TRUE para nao adicionar o tweet1
-	if float(words_in_common)/float(len_tweet2) > 0.7:
-		return True
-	else:
-		return False
+get_leave_tweets()
+get_stay_tweets()
 
 
-if all(word in s2 for word in s1):
-	print("Super parecidas")
-else:
-	print("Nao parecem")
+# s0 = "Vote"
+# s1 = "tp://tinyurl.com/of9l2py Why there's little hope for Greece's unemployed &amp; why they'll seek jobs in UK. #VoteLeave https://t.co/zUG8XBS9e8"
+# s2 = "tp://tinyurl.com/of9l2py Why there's little hope for Greece's unemployed &amp; why they'll seek jobs in UK. #VoteLeave https://t.co/ZvAvbRYq43"
 
-if(compare_similarity_tweets(s1,s2)):
-	print("Sao iguais porra!")
-else:
-	print("Sao diferentes")
+# def compare_similarity_tweets(new_tweet, old_tweet):
+# 	len_tweet1 = len(new_tweet.split())
+# 	len_tweet2 = len(old_tweet.split())
+
+# 	words_in_common = 0
+# 	for word in new_tweet.split():
+# 		if word in old_tweet:
+# 			words_in_common = words_in_common + 1
+
+# 	print(words_in_common)
+# 	print(len_tweet2)
+# 	print(float(words_in_common)/float(len_tweet2))
+# 	#Se as palavras do primeiro tweet ter quantidade maior do que 70% do segundo tweet
+# 	#Entao provavelmente sao iguais e retornamos TRUE para nao adicionar o tweet1
+# 	if float(words_in_common)/float(len_tweet2) > 0.7:
+# 		return True
+# 	else:
+# 		return False
+
+
+# if all(word in s2 for word in s1):
+# 	print("Super parecidas")
+# else:
+# 	print("Nao parecem")
+
+# if(compare_similarity_tweets(s1,s2)):
+# 	print("Sao iguais porra!")
+# else:
+# 	print("Sao diferentes")

@@ -27,6 +27,93 @@ tknzr = TweetTokenizer()
 new_stop_words = set()
 tokenized_tweets = []
 
+#Vao ser usados para guardar os tweets pos e neg em separado pra quando for olhar um tweet
+#que sera usado pra treinamento a gnt ve se ele ja existe ou nao
+#Assim nao armazena tweets iguais e classificar melhor
+positive_tweets = []
+negative_tweets = []
+
+#Se retornar TRUE quer dizer que o new_tweet eh muito parecido com o old_tweet, ou seja,
+#eh o mesmo tweet só com algumas palavras diferentes, como links.
+def compare_similarity_of_tweets(new_tweet, old_tweet):
+	len_tweet1 = len(new_tweet.split())
+	len_tweet2 = len(old_tweet.split())
+
+	words_in_common = 0
+	for word in new_tweet.split():
+		if word in old_tweet:
+			words_in_common = words_in_common + 1
+
+	# print(words_in_common)
+	# print(len_tweet2)
+	# print(float(words_in_common)/float(len_tweet2))
+	#Se as palavras do primeiro tweet ter quantidade maior do que 70% do segundo tweet
+	#Entao provavelmente sao iguais e retornamos TRUE para nao adicionar o tweet1
+	if len_tweet2 == 0:
+		return True
+	if float(words_in_common)/float(len_tweet2) > 0.7:
+		return True
+	else:
+		return False
+
+
+# def openFile_getTokenizedTweets(filename, category):
+# 	with open(filename) as doc:
+# 		start_time = time.time()
+
+# 		lines = doc.readlines()
+# 		print(len(lines))
+# 		lw_tokens = []
+# 		for l in lines:
+# 			#Pra tirar se tiver emotions no formato /u2026 por exemplo
+# 			l = l.decode('unicode_escape').encode('ascii','ignore')
+
+# 			#Antes de tokenizar os tweets eu vou ver se esse tweet ja existe para nao coloca-lo
+# 			# de novo e causar erro na classificao
+
+# 			if category == "pos":
+# 				tweet_already_exists = False
+# 				#Pra cada tweet vai ver se ele ja existe na lista ou nao
+# 				if len(positive_tweets) == 0:
+# 					#So vou botar o texto do tweet nessa lista
+# 					positive_tweets.append(l)
+# 				else:					
+# 					for tweet in positive_tweets:
+# 						if compare_similarity_of_tweets(l, tweet):
+# 							tweet_already_exists = True
+# 							break
+
+# 					#Se esse tweet nao existe ainda entao vamos tokeniza-lo e adicionar em tokenized_tweets
+# 					if tweet_already_exists == False:
+# 						tokens = tknzr.tokenize(l)
+# 						#Pega cada token e bota em minuscula
+# 						lw_tokens = [w.lower() for w in tokens]
+# 						positive_tweets.append(l)
+# 			elif category == "neg":
+# 				tweet_already_exists = False
+# 				#Pra cada
+# 				if len(negative_tweets) == 0:
+# 					negative_tweets.append(l)
+# 				else:					
+# 					for tweet in negative_tweets:
+# 						if compare_similarity_of_tweets(l, tweet):
+# 							tweet_already_exists = True
+# 							break
+
+# 					#Se esse tweet nao existe ainda entao vamos tokeniza-lo e adicionar em tokenized_tweets
+# 					if tweet_already_exists == False:
+# 						tokens = tknzr.tokenize(l)
+# 						#Pega cada token e bota em minuscula
+# 						lw_tokens = [w.lower() for w in tokens]
+# 						negative_tweets.append(l)
+
+# 			global tokenized_tweets
+# 			tokenized_tweets.append((lw_tokens, category))
+# 	print(len(tokenized_tweets))
+# 	print("--- Read file and tokenized tweets in %s seconds ---" % (time.time() - start_time))
+					
+
+
 def openFile_getTokenizedTweets(filename, category):
 	with open(filename) as doc:
 		lines = doc.readlines()
@@ -52,6 +139,7 @@ def reduce_tweets_words():
 	openFile_getTokenizedTweets("StayTweets1.txt", "pos")
 	openFile_getTokenizedTweets("StayTweetsDate.txt", "pos")
 	openFile_getTokenizedTweets("StayTweetsDate2.txt", "pos")
+	openFile_getTokenizedTweets("StayJune14.txt", "pos")
 	openFile_getTokenizedTweets("StayJune15.txt", "pos")
 	openFile_getTokenizedTweets("StayJune16.txt", "pos")
 	openFile_getTokenizedTweets("StayJune17.txt", "pos")
@@ -79,6 +167,7 @@ def reduce_tweets_words():
 
 	openFile_getTokenizedTweets("LeaveTweetsDate.txt", "neg")
 	openFile_getTokenizedTweets("LeaveTweetsDate2.txt", "neg")
+	openFile_getTokenizedTweets("LeaveJune14.txt", "neg")
 	openFile_getTokenizedTweets("LeaveJune15.txt", "neg")
 	openFile_getTokenizedTweets("LeaveJune16.txt", "neg")
 	openFile_getTokenizedTweets("LeaveJune17.txt", "neg")
@@ -103,12 +192,12 @@ def reduce_tweets_words():
 	#Vou tentar melhorar a lista de stopwords colocando nela algumas pontuacoes q nao servem de nada
 	# Fiz elas com unicode pq eh assim que as stop_words estao
 	punctuation = [u'.', u'-', u',', u'"', u'(', u')', u':', u'?', u"'", u'--', u';', 
-	u'!', u'$', u'*', u'&', u'...']
+	u'!', u'$', u'*', u'&', u'...', u':/', u'/', u'%', u'..']
 	punctuation = set(punctuation)
 	global new_stop_words
 	new_stop_words = stop_words.union(punctuation)
 
-	twitter_symbols = [u'rt', u'#voteleave', u'#voteremain', u'#leaveeu', u'h', u'#rt', u'=', u'@']
+	twitter_symbols = [u'rt', u'#voteleave', u'#voteremain', u'#leaveeu', u'h', u'#rt', u'=', u'@', u'https']
 	twitter_symbols = set(twitter_symbols)
 	new_stop_words = new_stop_words.union(twitter_symbols)
 
@@ -120,14 +209,6 @@ def reduce_tweets_words():
 	url_pattern = 'http[s]?://(?:[a-z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-f][0-9a-f]))+'
 	user_rt_pattern = '(?:@[\w_]+)'
     #user_rt_pattern = '(?:@[\w_]+)'
-
-	match = re.match(emotions_pattern, 'asfasdf \u2026 alo filho')
-	s = 'This is Some \u03c0 text that Has to be Cleaned\u2026! it\u0027s Annoying!'
-	print(s.decode('unicode_escape').encode('ascii','ignore'))
-	for w in s:
-		w = w.lower()
-	print(s)
-	print('\n')
 	
 	# filtered_tweets = [for tweet_cat in tokenized_tweets if ]
 	filtered_tweets = []
@@ -151,10 +232,6 @@ def reduce_tweets_words():
 		for token in tokens_to_be_removed:
 			tweet_cat[0].remove(token)
 
-		#print('\n')
-		#print(tweet_cat[0])
-		#print('\n')
-
 		#Limpar o tokens_to_be_removed pq senao vai sempre acumular de outros tweets
 		tokens_to_be_removed = []
 		#Adiciona o tweet sem as stopwords na nova lista
@@ -163,7 +240,7 @@ def reduce_tweets_words():
 	# Exemplo de tweet filtrado com stopwords
 	# ([u'@mpvine', u'If', u'fifty', u'million', u'people', u'say',
 	# u'foolish', u'thing', u"it's", u'still', u'foolish', u'thing'], 'pos')
-	print(filtered_tweets[228:230])
+	#print(filtered_tweets[228:230])
 
 
 	#######################################################################
@@ -238,7 +315,8 @@ def getTop_tweet_words(filtered_tweets):
   	print(all_tweets_words[1230:1240])
   	print('\n')
   	all_tweets_words = nltk.FreqDist(all_tweets_words)
-  	print(all_tweets_words.most_common(50))
+  	print(all_tweets_words["#itv"])
+  	print(all_tweets_words.most_common(65))
   	print('\n')
   	top_tweets_words = all_tweets_words.most_common(2000)
 	#print(top_tweets_words[1800:1805])
@@ -261,8 +339,6 @@ def find_features(tweet):
 	#print(top_word_features_keys[:20])
 	for w in top_tweets_features:
 		features[w] = (w in tweet_words)
-		# if(w in tweet_words):
-		# 	print(w)
 
 	return features
 
@@ -290,9 +366,16 @@ def avaliate_classifiers(featureSet):
 	# You need to build 2 sets for each classification label:
 	# a reference set of correct values, and a test set of observed values.
 
-	#Os primeiros 6686 tweets sao positivos e resto(6757) negativo
-	positive_tweets = featureSet[:6687]
-	negative_tweets = featureSet[6687:13373] #resto(6757)
+	#Os primeiros 6686 + 500(dia 14) tweets sao positivos e resto(6757 + 500(dia 14)) negativo
+	positive_tweets = featureSet[:7185]
+
+	#Misturando as paradas pra nao ficar testando só os mesmos últimos
+	random.shuffle(positive_tweets)
+
+	#print(featureSet[7185])
+	#Pra pegar 7185 do pos e 7185 do negativo
+	negative_tweets = featureSet[7185:14371]
+	random.shuffle(negative_tweets)
 
 	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
 	pos_cutoff = len(positive_tweets)*3/4
@@ -314,7 +397,7 @@ def avaliate_classifiers(featureSet):
 	global classifier
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
-	classifier.show_most_informative_features(50)
+	classifier.show_most_informative_features(30)
 
 	refsets = collections.defaultdict(set)
 	testsets = collections.defaultdict(set)
