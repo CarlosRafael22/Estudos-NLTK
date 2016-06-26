@@ -117,7 +117,7 @@ def compare_similarity_of_tweets(new_tweet, old_tweet):
 def openFile_getTokenizedTweets(filename, category):
 	with open(filename) as doc:
 		lines = doc.readlines()
-		print(len(lines))
+		#print(len(lines))
 		for l in lines:
 			#Pra tirar se tiver emotions no formato /u2026 por exemplo
 			l = l.decode('unicode_escape').encode('ascii','ignore')
@@ -148,14 +148,14 @@ def reduce_tweets_words():
 	openFile_getTokenizedTweets("StayJune20.txt", "pos")
 	openFile_getTokenizedTweets("StayTweetsNow.txt", "pos")
 
-	print(len(tokenized_tweets))
+	
 	###########################################################################################
 
 	#Too fazendo isso pra pegar so os 1286 primeiros desse arquivo q tem 1537
 	with open("LeaveTweets1.txt") as doc:
 		lines = doc.readlines()
 		lines = lines[:1286]
-		print(len(lines))
+		#print(len(lines))
 		for l in lines:
 			#Pra tirar se tiver emotions no formato /u2026 por exemplo
 			l = l.decode('unicode_escape').encode('ascii','ignore')
@@ -178,6 +178,7 @@ def reduce_tweets_words():
 
 	all_words = []
 
+	print(len(tokenized_tweets))
 	#############################################################################
 	#
 	# AGORA QUE OS TWEETS ESTAO EM TUPLAS (tweets_tokenizados , categoria) VAMOS
@@ -213,11 +214,10 @@ def reduce_tweets_words():
 	# filtered_tweets = [for tweet_cat in tokenized_tweets if ]
 	filtered_tweets = []
 	tokens_to_be_removed = []
-	print(tokenized_tweets[228:230])
+	#print(tokenized_tweets[228:230])
+
 	#Para cada tupla (tweet_tok,categoria)
 	for tweet_cat in tokenized_tweets:
-		#print(tweet_cat)
-		#print('\n')
 
 		#Pra cada token desse tweet
 		for token in tweet_cat[0]:
@@ -266,14 +266,11 @@ def reduce_tweet(tweet_text):
 	text_tokenized = tknzr.tokenize(tweet_text)
 	#Botando em minuscula pra nao ter diferenca
 	text_tokenized = [w.lower() for w in text_tokenized]
-	print(text_tokenized)
+	#print(text_tokenized)
 
-	#user_rt_pattern = "@\w+?"
-	#url_pattern = 'http[s]:/'
 	emotions_pattern = '\u\d+'
 	url_pattern = 'http[s]?://(?:[a-z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-f][0-9a-f]))+'
 	user_rt_pattern = '(?:@[\w_]+)'
-    #user_rt_pattern = '(?:@[\w_]+)'
 
 	tokens_to_be_removed = []
 	for token in text_tokenized:
@@ -312,10 +309,10 @@ def getTop_tweet_words(filtered_tweets):
 
   	# Tem 20515 palavras nessa lista
   	print(len(all_tweets_words))
-  	print(all_tweets_words[1230:1240])
-  	print('\n')
+  	# print(all_tweets_words[1230:1240])
+  	# print('\n')
   	all_tweets_words = nltk.FreqDist(all_tweets_words)
-  	print(all_tweets_words["#itv"])
+  	#print(all_tweets_words["#itv"])
   	print(all_tweets_words.most_common(65))
   	print('\n')
   	top_tweets_words = all_tweets_words.most_common(2000)
@@ -357,10 +354,6 @@ def find_features(tweet):
 
 def avaliate_classifiers(featureSet):
 	#random.shuffle(featureSet)
-
-	# #Tem 2972 tweets no total
-	# training_set = featureSet[:2750]
-	# testing_set = featureSet[2750:]
 
 	#Vai fazer o calculo de recall e precision
 	# You need to build 2 sets for each classification label:
