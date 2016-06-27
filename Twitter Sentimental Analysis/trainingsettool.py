@@ -20,7 +20,7 @@ set_size = 100
 """
 collect classifyied tweets
 """
-with open('tweets_leave_stay_eu.csv', 'w',encoding='utf-8', newline='') as csvfile:
+with open('tweets_leave_stay_eu.csv', 'w') as csvfile:
 
 	spamwriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
@@ -28,7 +28,7 @@ with open('tweets_leave_stay_eu.csv', 'w',encoding='utf-8', newline='') as csvfi
 
 	while len(documents_stay) < set_size or len(documents_leave) < set_size or len(documents_other) < set_size:
 
-		docs = tw.query('(leave OR stay) AND EU')
+		docs = tw.query('(leave OR stay) AND EU -RT')
 		
 		for item in docs:
 

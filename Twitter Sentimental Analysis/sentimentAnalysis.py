@@ -353,6 +353,8 @@ def find_features(tweet):
 
 
 def avaliate_classifiers(featureSet):
+	print("Vamos treinar o classificador agora!")
+	print("\n")
 	#random.shuffle(featureSet)
 
 	#Vai fazer o calculo de recall e precision
@@ -366,8 +368,8 @@ def avaliate_classifiers(featureSet):
 	random.shuffle(positive_tweets)
 
 	#print(featureSet[7185])
-	#Pra pegar 7185 do pos e 7185 do negativo
-	negative_tweets = featureSet[7185:14371]
+	#Pra pegar 7185 do pos e 7185 do negativo mas o negativo tem 7213
+	negative_tweets = featureSet[7185:14372]
 	random.shuffle(negative_tweets)
 
 	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
@@ -388,13 +390,14 @@ def avaliate_classifiers(featureSet):
 	start_time = time.time()
 
 	global classifier
+	print("Comecou a treina-lo agora!")
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
 	classifier.show_most_informative_features(30)
 
 	refsets = collections.defaultdict(set)
 	testsets = collections.defaultdict(set)
-	 
+
 	for i, (feats, label) in enumerate(testing_set):
 	    refsets[label].add(i)
 	    observed = classifier.classify(feats)
@@ -411,6 +414,44 @@ def avaliate_classifiers(featureSet):
 	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 
 
+
+######################################################################################
+#
+# CRIANDO O METODO PRA FAZER O 10-FOLD CROSS-VALIDATION E TENTAR MELHORAR OS RESULTADOS
+#
+######################################################################################
+
+#Retorna a lista das accuracies dos 10 treinamentos
+def _10_fold_cross_validation(featureSet):
+	start_time = time.time()
+
+	#Agora vou tentar criar um 10-fold training set pra ver se tem melhor desempenho
+	num_folds = 10
+	subset_size = len(featureSet)/num_folds
+	# Como no total tem 14.400 tweets coletados, cada subset tera 1.440 tweets
+	random.shuffle(featureSet)
+
+	accuracy_list = []
+	for i in range(num_folds):
+		testing_this_round = featureSet[i*subset_size:][:subset_size]
+		training_this_round = featureSet[:i*subset_size] + featureSet[(i+1)*subset_size:]
+
+		print("Round "+ str(i) +" : ")
+		print("Testing fold is: " + "featureSet[" +str(i*subset_size)+":"+str((i+1)*subset_size)+"]")
+		#print(len(testing_this_round))
+		#print(len(training_this_round))
+		global classifier
+		classifier = nltk.NaiveBayesClassifier.train(training_this_round)
+		accuracy_list.append(((nltk.classify.accuracy(classifier, testing_this_round)) * 100))
+		print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+	return accuracy_list
+
+#Calcula a media dos acurracies do 10-fold
+def calculate_average(list):
+		acc_total = 0
+		for i in range(len(list)):
+			acc_total = acc_total + list[i]
+		return acc_total/len(list)
 
 ########################################################################################
 
@@ -434,6 +475,9 @@ print(len(featureSet))
 
 classifier = None
 avaliate_classifiers(featureSet)
+# acc_list = _10_fold_cross_validation(featureSet)
+# print(acc_list)
+# print(calculate_average(acc_list))
 
 print('\n')
 #new_tweet = reduce_tweet("Sad to hear that some parents (but not most) are going to #VoteLeave leaving the childrens future to chance in #Timperley. #VoteRemain 1 retweet 0 likes ")

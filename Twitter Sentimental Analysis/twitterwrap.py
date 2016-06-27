@@ -18,4 +18,4 @@ class TwitterWrap:
 		self.api = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
 
 	def query(self,query_str,count=100, max_id=9999999999999999999999):
-		return self.api.request('search/tweets', {'q':query_str,'lang':'en','count':str(count),'max_id':str(max_id),'include_entities':'false'})
+		return self.api.request('search/tweets', {'q':query_str,'lang':'en','count':str(count), 'until':'2016-06-18', 'max_id':str(max_id),'include_entities':'false'})
