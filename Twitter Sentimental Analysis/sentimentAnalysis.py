@@ -20,12 +20,14 @@ from nltk.tokenize import TweetTokenizer, word_tokenize
 
 import collections
 from nltk.metrics import precision, recall, f_measure
-
+from readData import readData
 ########################################################
 
 tknzr = TweetTokenizer()
 new_stop_words = set()
 tokenized_tweets = []
+
+
 
 #Vao ser usados para guardar os tweets pos e neg em separado pra quando for olhar um tweet
 #que sera usado pra treinamento a gnt ve se ele ja existe ou nao
@@ -125,7 +127,11 @@ def openFile_getTokenizedTweets(filename, category):
 			global tokenized_tweets
 			#Pega cada token e bota em minuscula
 			lw_tokens = [w.lower() for w in tokens]
-			tokenized_tweets.append((lw_tokens, category))
+			tokenized_tweets.append((lw_tokens, category, l))
+
+def categorizy_tweets(tweets, category):
+	tweets_cat = [(tweet, category) for tweet in tweets]
+	return tweets_cat
 
 def reduce_tweets_words():
 
@@ -136,48 +142,58 @@ def reduce_tweets_words():
 	
 
 	# Tem 2853 no FeatureSet, sendo: 1286 Stay e 1567 Leave
-	openFile_getTokenizedTweets("StayTweets1.txt", "pos")
-	openFile_getTokenizedTweets("StayTweetsDate.txt", "pos")
-	openFile_getTokenizedTweets("StayTweetsDate2.txt", "pos")
-	openFile_getTokenizedTweets("StayJune14.txt", "pos")
-	openFile_getTokenizedTweets("StayJune15.txt", "pos")
-	openFile_getTokenizedTweets("StayJune16.txt", "pos")
-	openFile_getTokenizedTweets("StayJune17.txt", "pos")
-	openFile_getTokenizedTweets("StayJune18.txt", "pos")
-	openFile_getTokenizedTweets("StayJune19.txt", "pos")
-	openFile_getTokenizedTweets("StayJune20.txt", "pos")
-	openFile_getTokenizedTweets("StayTweetsNow.txt", "pos")
+	# openFile_getTokenizedTweets("StayTweets1.txt", "pos")
+	# openFile_getTokenizedTweets("StayTweetsDate.txt", "pos")
+	# openFile_getTokenizedTweets("StayTweetsDate2.txt", "pos")
+	# openFile_getTokenizedTweets("StayJune14.txt", "pos")
+	# openFile_getTokenizedTweets("StayJune15.txt", "pos")
+	# openFile_getTokenizedTweets("StayJune16.txt", "pos")
+	# openFile_getTokenizedTweets("StayJune17.txt", "pos")
+	# openFile_getTokenizedTweets("StayJune18.txt", "pos")
+	# openFile_getTokenizedTweets("StayJune19.txt", "pos")
+	# openFile_getTokenizedTweets("StayJune20.txt", "pos")
+	# openFile_getTokenizedTweets("StayTweetsNow.txt", "pos")
 
 	
 	###########################################################################################
 
 	#Too fazendo isso pra pegar so os 1286 primeiros desse arquivo q tem 1537
-	with open("LeaveTweets1.txt") as doc:
-		lines = doc.readlines()
-		lines = lines[:1286]
-		#print(len(lines))
-		for l in lines:
-			#Pra tirar se tiver emotions no formato /u2026 por exemplo
-			l = l.decode('unicode_escape').encode('ascii','ignore')
-			tokens = tknzr.tokenize(l)
-			global tokenized_tweets
-			#Pega cada token e bota em minuscula
-			lw_tokens = [w.lower() for w in tokens]
-			tokenized_tweets.append((lw_tokens, "neg"))
+	# with open("LeaveTweets1.txt") as doc:
+	# 	lines = doc.readlines()
+	# 	lines = lines[:1286]
+	# 	#print(len(lines))
+	# 	for l in lines:
+	# 		#Pra tirar se tiver emotions no formato /u2026 por exemplo
+	# 		l = l.decode('unicode_escape').encode('ascii','ignore')
+	# 		tokens = tknzr.tokenize(l)
+	# 		global tokenized_tweets
+	# 		#Pega cada token e bota em minuscula
+	# 		lw_tokens = [w.lower() for w in tokens]
+	# 		tokenized_tweets.append((lw_tokens, "neg", l))
 
-	openFile_getTokenizedTweets("LeaveTweetsDate.txt", "neg")
-	openFile_getTokenizedTweets("LeaveTweetsDate2.txt", "neg")
-	openFile_getTokenizedTweets("LeaveJune14.txt", "neg")
-	openFile_getTokenizedTweets("LeaveJune15.txt", "neg")
-	openFile_getTokenizedTweets("LeaveJune16.txt", "neg")
-	openFile_getTokenizedTweets("LeaveJune17.txt", "neg")
-	openFile_getTokenizedTweets("LeaveJune18.txt", "neg")
-	openFile_getTokenizedTweets("LeaveJune19.txt", "neg")
-	openFile_getTokenizedTweets("LeaveJune20.txt", "neg")
-	openFile_getTokenizedTweets("LeaveTweetsNow.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveTweetsDate.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveTweetsDate2.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveJune14.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveJune15.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveJune16.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveJune17.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveJune18.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveJune19.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveJune20.txt", "neg")
+	# openFile_getTokenizedTweets("LeaveTweetsNow.txt", "neg")
 
+	[leave_tweets, stay_tweets, other_tweets] = readData()
+
+	leave_tweets = categorizy_tweets(leave_tweets, "neg")
+	stay_tweets = categorizy_tweets(stay_tweets, "pos")
+	other_tweets = categorizy_tweets(other_tweets, "neutral") 
+
+	tokenized_tweets = leave_tweets + stay_tweets + other_tweets
 	all_words = []
 
+	print(len(leave_tweets))
+	print(len(stay_tweets))
+	print(len(other_tweets))
 	print(len(tokenized_tweets))
 	#############################################################################
 	#
@@ -391,7 +407,87 @@ def avaliate_classifiers(featureSet):
 
 	global classifier
 	print("Comecou a treina-lo agora!")
+
+	#training_set2 = [(t,l) for (t,l,twe) in training_set]
+
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
+	#testing_set2 = [(t,l) for (t,l,twe) in testing_set]
+	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
+	classifier.show_most_informative_features(30)
+
+	refsets = collections.defaultdict(set)
+	testsets = collections.defaultdict(set)
+
+	# for i, (feats, label, l) in enumerate(testing_set):
+	#     refsets[label].add(i)
+	#     observed = classifier.classify(feats)
+	#     testsets[observed].add(i)
+	#     print("--"*200)
+	#     print()
+	#     print("Classified as: ",observed)
+	#     print()
+	#     print(l)
+	#     print()
+	#     print("--"*200)
+	#     raw_input("Press any key to continue:")
+	 
+	print 'pos precision:', precision(refsets['pos'], testsets['pos'])
+	print 'pos recall:', recall(refsets['pos'], testsets['pos'])
+	print 'pos F-measure:', f_measure(refsets['pos'], testsets['pos'])
+	print 'neg precision:', precision(refsets['neg'], testsets['neg'])
+	print 'neg recall:', recall(refsets['neg'], testsets['neg'])
+	print 'neg F-measure:', f_measure(refsets['neg'], testsets['neg'])
+
+
+	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
+
+def avaliate_new_classifier(featureSet):
+	print("Vamos treinar o classificador agora!")
+	print("\n")
+	#random.shuffle(featureSet)
+
+	#Cada um tem 97
+	positive_tweets = featureSet[:96]
+
+	#Misturando as paradas pra nao ficar testando só os mesmos últimos
+	random.shuffle(positive_tweets)
+
+	#print(featureSet[7185])
+	#Pra pegar 7185 do pos e 7185 do negativo mas o negativo tem 7213
+	negative_tweets = featureSet[96:193]
+	random.shuffle(negative_tweets)
+
+	neutral_tweets = featureSet[193:]
+	random.shuffle(neutral_tweets)
+
+	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
+	pos_cutoff = len(positive_tweets)*3/4
+	neg_cutoff = len(negative_tweets)*3/4
+	neu_cutoff = len(neutral_tweets)*3/4
+
+	# 75% dos tweets vao pra ser de referencia(treinamento) e o resto pra teste
+	pos_references = positive_tweets[:pos_cutoff]
+	pos_tests = positive_tweets[pos_cutoff:]
+
+	neg_references = negative_tweets[:neg_cutoff]
+	neg_tests = negative_tweets[neg_cutoff:]
+
+	neu_references = neutral_tweets[:neu_cutoff]
+	neu_tests = neutral_tweets[neu_cutoff:]
+
+	#COnjunto de treinamento e de testes pra calcular a accuracy
+	training_set = pos_references + neg_references + neu_references
+	testing_set = pos_tests + neg_tests + neu_tests
+
+	start_time = time.time()
+
+	global classifier
+	print("Comecou a treina-lo agora!")
+
+	#training_set2 = [(t,l) for (t,l,twe) in training_set]
+
+	classifier = nltk.NaiveBayesClassifier.train(training_set)
+	#testing_set2 = [(t,l) for (t,l,twe) in testing_set]
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
 	classifier.show_most_informative_features(30)
 
@@ -406,9 +502,14 @@ def avaliate_classifiers(featureSet):
 	print 'pos precision:', precision(refsets['pos'], testsets['pos'])
 	print 'pos recall:', recall(refsets['pos'], testsets['pos'])
 	print 'pos F-measure:', f_measure(refsets['pos'], testsets['pos'])
+
 	print 'neg precision:', precision(refsets['neg'], testsets['neg'])
 	print 'neg recall:', recall(refsets['neg'], testsets['neg'])
 	print 'neg F-measure:', f_measure(refsets['neg'], testsets['neg'])
+
+	print 'neutral precision:', precision(refsets['neutral'], testsets['neutral'])
+	print 'neutral recall:', recall(refsets['neutral'], testsets['neutral'])
+	print 'neutral F-measure:', f_measure(refsets['neutral'], testsets['neutral'])
 
 
 	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
@@ -474,7 +575,7 @@ featureSet = [(find_features(tweet), category) for (tweet, category) in filtered
 print(len(featureSet))
 
 classifier = None
-avaliate_classifiers(featureSet)
+avaliate_new_classifier(featureSet)
 # acc_list = _10_fold_cross_validation(featureSet)
 # print(acc_list)
 # print(calculate_average(acc_list))

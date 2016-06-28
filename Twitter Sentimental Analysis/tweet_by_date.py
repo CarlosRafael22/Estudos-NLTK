@@ -32,6 +32,8 @@ GET TWEETs
 query_stay = '#VoteStay OR #VoteRemain -#VoteLeave -RT'
 query_leave = '#LeaveEu OR #VoteLeave -#VoteRemain -RT'
 
+query = '(leave OR stay) AND EU -RT'
+
 #tweets collected
 documents_stay = []
 documents_leave = []
@@ -47,7 +49,7 @@ collect 'stay' tweets
 stay_max_id = 99999999999999999999999999999
 def get_stay_tweets():
 	while len(documents_stay) < 500:
-		stay_results = api.request('search/tweets', {'q':query_stay,'lang':'en','count':'100','until':'2016-06-10','max_id':str(stay_max_id),'include_entities':'false'})
+		stay_results = api.request('search/tweets', {'q':query,'lang':'en','count':'100','until':'2016-06-19','max_id':str(stay_max_id),'include_entities':'false'})
 
 		print(type(stay_results))
 
@@ -74,48 +76,48 @@ def get_stay_tweets():
 	print(len(documents_stay), 'Stay Tweets collecteds until now')
 
 	print(documents_stay[3])
-	with open('StayTweetsDate5.txt', 'w') as outfile:
+	with open('TweetsDate8.txt', 'w') as outfile:
 		for item in documents_stay:
 			#Pra ver se resolve o problema de
 			#UnicodeEncodeError: 'ascii' codec can't encode character u'\u2026'
 	  		outfile.write("%s\n" % item.encode('utf-8'))
 
-leave_max_id = 99999999999999999999999999999
-def get_leave_tweets():
-	while len(documents_leave) < 500:
-		leave_results = api.request('search/tweets', {'q':query_leave,'lang':'en','count':'100','until':'2016-06-10','max_id':str(leave_max_id),'include_entities':'false'})
+# leave_max_id = 99999999999999999999999999999
+# def get_leave_tweets():
+# 	while len(documents_leave) < 500:
+# 		leave_results = api.request('search/tweets', {'q':query_leave,'lang':'en','count':'100','until':'2016-06-18','max_id':str(leave_max_id),'include_entities':'false'})
 
-		print(leave_results)
+# 		print(leave_results)
 
-		global leave_max_id
-		#leave_max_id = leave_results[-1]
+# 		global leave_max_id
+# 		#leave_max_id = leave_results[-1]
 
-		for item in leave_results:
+# 		for item in leave_results:
 
-			"""
-			TOKENIZE ALL TWEETS
-			"""
-			tweet = item['text']
-			#Sunstitui a quebra de linha por espaco
-			tweet = tweet.replace('\n', ' ')
-			#Pra replace muitos espacos em branco por um unico
-			tweet = ' '.join(tweet.split())
-			leave_max_id = item['id']
-			documents_leave.append(tweet)
-		print(leave_max_id)
-		print(len(documents_leave))
+# 			"""
+# 			TOKENIZE ALL TWEETS
+# 			"""
+# 			tweet = item['text']
+# 			#Sunstitui a quebra de linha por espaco
+# 			tweet = tweet.replace('\n', ' ')
+# 			#Pra replace muitos espacos em branco por um unico
+# 			tweet = ' '.join(tweet.split())
+# 			leave_max_id = item['id']
+# 			documents_leave.append(tweet)
+# 		print(leave_max_id)
+# 		print(len(documents_leave))
 
 
-	print(len(documents_leave), 'Stay Tweets collecteds until now')
+# 	print(len(documents_leave), 'Stay Tweets collecteds until now')
 
-	#print(documents_leave[3])
-	with open('LeaveTweetsDate5.txt', 'w') as outfile:
-		for item in documents_leave:
-			#Pra ver se resolve o problema de
-			#UnicodeEncodeError: 'ascii' codec can't encode character u'\u2026'
-	  		outfile.write("%s\n" % item.encode('utf-8'))
+# 	#print(documents_leave[3])
+# 	with open('LeaveTweetsDate5.txt', 'w') as outfile:
+# 		for item in documents_leave:
+# 			#Pra ver se resolve o problema de
+# 			#UnicodeEncodeError: 'ascii' codec can't encode character u'\u2026'
+# 	  		outfile.write("%s\n" % item.encode('utf-8'))
 
-get_leave_tweets()
+# get_leave_tweets()
 get_stay_tweets()
 
 
