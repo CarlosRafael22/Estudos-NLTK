@@ -35,87 +35,6 @@ tokenized_tweets = []
 positive_tweets = []
 negative_tweets = []
 
-#Se retornar TRUE quer dizer que o new_tweet eh muito parecido com o old_tweet, ou seja,
-#eh o mesmo tweet só com algumas palavras diferentes, como links.
-def compare_similarity_of_tweets(new_tweet, old_tweet):
-	len_tweet1 = len(new_tweet.split())
-	len_tweet2 = len(old_tweet.split())
-
-	words_in_common = 0
-	for word in new_tweet.split():
-		if word in old_tweet:
-			words_in_common = words_in_common + 1
-
-	# print(words_in_common)
-	# print(len_tweet2)
-	# print(float(words_in_common)/float(len_tweet2))
-	#Se as palavras do primeiro tweet ter quantidade maior do que 70% do segundo tweet
-	#Entao provavelmente sao iguais e retornamos TRUE para nao adicionar o tweet1
-	if len_tweet2 == 0:
-		return True
-	if float(words_in_common)/float(len_tweet2) > 0.7:
-		return True
-	else:
-		return False
-
-
-# def openFile_getTokenizedTweets(filename, category):
-# 	with open(filename) as doc:
-# 		start_time = time.time()
-
-# 		lines = doc.readlines()
-# 		print(len(lines))
-# 		lw_tokens = []
-# 		for l in lines:
-# 			#Pra tirar se tiver emotions no formato /u2026 por exemplo
-# 			l = l.decode('unicode_escape').encode('ascii','ignore')
-
-# 			#Antes de tokenizar os tweets eu vou ver se esse tweet ja existe para nao coloca-lo
-# 			# de novo e causar erro na classificao
-
-# 			if category == "pos":
-# 				tweet_already_exists = False
-# 				#Pra cada tweet vai ver se ele ja existe na lista ou nao
-# 				if len(positive_tweets) == 0:
-# 					#So vou botar o texto do tweet nessa lista
-# 					positive_tweets.append(l)
-# 				else:					
-# 					for tweet in positive_tweets:
-# 						if compare_similarity_of_tweets(l, tweet):
-# 							tweet_already_exists = True
-# 							break
-
-# 					#Se esse tweet nao existe ainda entao vamos tokeniza-lo e adicionar em tokenized_tweets
-# 					if tweet_already_exists == False:
-# 						tokens = tknzr.tokenize(l)
-# 						#Pega cada token e bota em minuscula
-# 						lw_tokens = [w.lower() for w in tokens]
-# 						positive_tweets.append(l)
-# 			elif category == "neg":
-# 				tweet_already_exists = False
-# 				#Pra cada
-# 				if len(negative_tweets) == 0:
-# 					negative_tweets.append(l)
-# 				else:					
-# 					for tweet in negative_tweets:
-# 						if compare_similarity_of_tweets(l, tweet):
-# 							tweet_already_exists = True
-# 							break
-
-# 					#Se esse tweet nao existe ainda entao vamos tokeniza-lo e adicionar em tokenized_tweets
-# 					if tweet_already_exists == False:
-# 						tokens = tknzr.tokenize(l)
-# 						#Pega cada token e bota em minuscula
-# 						lw_tokens = [w.lower() for w in tokens]
-# 						negative_tweets.append(l)
-
-# 			global tokenized_tweets
-# 			tokenized_tweets.append((lw_tokens, category))
-# 	print(len(tokenized_tweets))
-# 	print("--- Read file and tokenized tweets in %s seconds ---" % (time.time() - start_time))
-					
-
-
 def openFile_getTokenizedTweets(filename, category):
 	with open(filename) as doc:
 		lines = doc.readlines()
@@ -149,68 +68,26 @@ def categorizy_tweets(tweets, category):
 
 def reduce_tweets_words():
 
-	#Ja vai pegar os tweets dos txts e tokeniza-los e colocar nesse array como tuplas
-	# (Twitter_tokenizado , categoria_twitter)
-	# ([u'RT', u'@mpvine', u':', u'If', u'fifty', u'million', u'people', u'say', u'a', 
-	# u'foolish', u'thing', u',', u"it's", u'still', u'a', u'foolish', u'thing', u'.'], 'pos')
-	
-
-	# Tem 2853 no FeatureSet, sendo: 1286 Stay e 1567 Leave
-	# openFile_getTokenizedTweets("StayTweets1.txt", "pos")
-	# openFile_getTokenizedTweets("StayTweetsDate.txt", "pos")
-	# openFile_getTokenizedTweets("StayTweetsDate2.txt", "pos")
-	# openFile_getTokenizedTweets("StayJune14.txt", "pos")
-	# openFile_getTokenizedTweets("StayJune15.txt", "pos")
-	# openFile_getTokenizedTweets("StayJune16.txt", "pos")
-	# openFile_getTokenizedTweets("StayJune17.txt", "pos")
-	# openFile_getTokenizedTweets("StayJune18.txt", "pos")
-	# openFile_getTokenizedTweets("StayJune19.txt", "pos")
-	# openFile_getTokenizedTweets("StayJune20.txt", "pos")
-	# openFile_getTokenizedTweets("StayTweetsNow.txt", "pos")
-
-	
-	###########################################################################################
-
-	#Too fazendo isso pra pegar so os 1286 primeiros desse arquivo q tem 1537
-	# with open("LeaveTweets1.txt") as doc:
-	# 	lines = doc.readlines()
-	# 	lines = lines[:1286]
-	# 	#print(len(lines))
-	# 	for l in lines:
-	# 		#Pra tirar se tiver emotions no formato /u2026 por exemplo
-	# 		l = l.decode('unicode_escape').encode('ascii','ignore')
-	# 		tokens = tknzr.tokenize(l)
-	# 		global tokenized_tweets
-	# 		#Pega cada token e bota em minuscula
-	# 		lw_tokens = [w.lower() for w in tokens]
-	# 		tokenized_tweets.append((lw_tokens, "neg", l))
-
-	# openFile_getTokenizedTweets("LeaveTweetsDate.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveTweetsDate2.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveJune14.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveJune15.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveJune16.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveJune17.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveJune18.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveJune19.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveJune20.txt", "neg")
-	# openFile_getTokenizedTweets("LeaveTweetsNow.txt", "neg")
-
 	[leave_tweets, stay_tweets, other_tweets] = readData()
 
 	leave_tweets = categorizy_tweets(leave_tweets, "neg")
 	new_leave = getTokenizedTweetsFile("ExtraLeaveTweets.txt", "neg")
+	leave_Farias = getTokenizedTweetsFile("FariasLeave.txt", "neg")
 	stay_tweets = categorizy_tweets(stay_tweets, "pos")
 	new_stay = getTokenizedTweetsFile("ExtraStayTweets.txt", "pos")
+	stay_Farias = getTokenizedTweetsFile("FariasStay.txt", "pos")
 	other_tweets = categorizy_tweets(other_tweets, "neutral") 
 
-	tokenized_tweets = leave_tweets + new_leave + stay_tweets + new_stay + other_tweets
+	tokenized_tweets = leave_tweets + new_leave + leave_Farias + stay_tweets + new_stay + stay_Farias + other_tweets + other_tweets
 	all_words = []
 
 	print(len(leave_tweets))
 	print(len(new_leave))
+	print(len(leave_Farias))
 	print(len(stay_tweets))
 	print(len(new_stay))
+	print(len(stay_Farias))
+	print(len(other_tweets))
 	print(len(other_tweets))
 	print(len(tokenized_tweets))
 	#############################################################################
@@ -226,14 +103,14 @@ def reduce_tweets_words():
 
 	#Vou tentar melhorar a lista de stopwords colocando nela algumas pontuacoes q nao servem de nada
 	# Fiz elas com unicode pq eh assim que as stop_words estao
-	punctuation = [u'.', u'-', u',', u'"', u'(', u')', u':', u'?', u"'", u'--', u';', 
-	u'!', u'$', u'*', u'&', u'...', u':/', u'/', u'%', u'..']
+	punctuation = [u'.', u'-', u',', u'"', u'(', u')', u':', u"'", u'--', u';', 
+	u'!', u'$', u'*', u'&', u'...', u':/', u'/', u'..']
 	punctuation = set(punctuation)
 	global new_stop_words
 	new_stop_words = stop_words.union(punctuation)
 
 	twitter_symbols = [u'rt', u'#voteleave', u'#voteremain', u'#leaveeu', u'h', u'#rt', u'=', u'@', u'https',
-	u'+', u"'", u'|', u'...']
+	u'+', u'\'', u'|', u'...']
 	twitter_symbols = set(twitter_symbols)
 	new_stop_words = new_stop_words.union(twitter_symbols)
 
@@ -386,97 +263,23 @@ def find_features(tweet):
 # IREMOS USA-LOS NO TREINAMENTO DO CLASSIFICADOR
 ######################################################################################
 
-
-def avaliate_classifiers(featureSet):
-	print("Vamos treinar o classificador agora!")
-	print("\n")
-	#random.shuffle(featureSet)
-
-	#Vai fazer o calculo de recall e precision
-	# You need to build 2 sets for each classification label:
-	# a reference set of correct values, and a test set of observed values.
-
-	#Os primeiros 6686 + 500(dia 14) tweets sao positivos e resto(6757 + 500(dia 14)) negativo
-	positive_tweets = featureSet[:7185]
-
-	#Misturando as paradas pra nao ficar testando só os mesmos últimos
-	random.shuffle(positive_tweets)
-
-	#print(featureSet[7185])
-	#Pra pegar 7185 do pos e 7185 do negativo mas o negativo tem 7213
-	negative_tweets = featureSet[7185:14372]
-	random.shuffle(negative_tweets)
-
-	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
-	pos_cutoff = len(positive_tweets)*3/4
-	neg_cutoff = len(negative_tweets)*3/4
-
-	# 75% dos tweets vao pra ser de referencia(treinamento) e o resto pra teste
-	pos_references = positive_tweets[:pos_cutoff]
-	pos_tests = positive_tweets[pos_cutoff:]
-
-	neg_references = negative_tweets[:neg_cutoff]
-	neg_tests = negative_tweets[neg_cutoff:]
-
-	#COnjunto de treinamento e de testes pra calcular a accuracy
-	training_set = pos_references + neg_references
-	testing_set = pos_tests + neg_tests
-
-	start_time = time.time()
-
-	global classifier
-	print("Comecou a treina-lo agora!")
-
-	#training_set2 = [(t,l) for (t,l,twe) in training_set]
-
-	classifier = nltk.NaiveBayesClassifier.train(training_set)
-	#testing_set2 = [(t,l) for (t,l,twe) in testing_set]
-	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
-	classifier.show_most_informative_features(30)
-
-	refsets = collections.defaultdict(set)
-	testsets = collections.defaultdict(set)
-
-	# for i, (feats, label, l) in enumerate(testing_set):
-	#     refsets[label].add(i)
-	#     observed = classifier.classify(feats)
-	#     testsets[observed].add(i)
-	#     print("--"*200)
-	#     print()
-	#     print("Classified as: ",observed)
-	#     print()
-	#     print(l)
-	#     print()
-	#     print("--"*200)
-	#     raw_input("Press any key to continue:")
-	 
-	print 'pos precision:', precision(refsets['pos'], testsets['pos'])
-	print 'pos recall:', recall(refsets['pos'], testsets['pos'])
-	print 'pos F-measure:', f_measure(refsets['pos'], testsets['pos'])
-	print 'neg precision:', precision(refsets['neg'], testsets['neg'])
-	print 'neg recall:', recall(refsets['neg'], testsets['neg'])
-	print 'neg F-measure:', f_measure(refsets['neg'], testsets['neg'])
-
-
-	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
-
 def avaliate_new_classifier(featureSet):
 	print("Vamos treinar o classificador agora!")
 	print("\n")
 	#random.shuffle(featureSet)
 
-	#Cada um tem 197
-	positive_tweets = featureSet[:196]
+	#Cada um tem 197 + 50
+	positive_tweets = featureSet[:246]
 
 	#Misturando as paradas pra nao ficar testando só os mesmos últimos
 	random.shuffle(positive_tweets)
 
 	#print(featureSet[7185])
 	#Pra pegar 7185 do pos e 7185 do negativo mas o negativo tem 7213
-	negative_tweets = featureSet[196:293]
+	negative_tweets = featureSet[246:343]
 	random.shuffle(negative_tweets)
 
-	neutral_tweets = featureSet[293:]
+	neutral_tweets = featureSet[343:]
 	random.shuffle(neutral_tweets)
 
 	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
@@ -508,7 +311,7 @@ def avaliate_new_classifier(featureSet):
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
 	#testing_set2 = [(t,l) for (t,l,twe) in testing_set]
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
-	classifier.show_most_informative_features(30)
+	classifier.show_most_informative_features(45)
 
 	refsets = collections.defaultdict(set)
 	testsets = collections.defaultdict(set)
@@ -601,7 +404,13 @@ avaliate_new_classifier(featureSet)
 
 print('\n')
 #new_tweet = reduce_tweet("Sad to hear that some parents (but not most) are going to #VoteLeave leaving the childrens future to chance in #Timperley. #VoteRemain 1 retweet 0 likes ")
-new_tweet = reduce_tweet("Brexit is basically a referendum on how white people in the UK feel about minorities: http://bit.ly/28SyaDW ")
+#new_tweet = reduce_tweet("Brexit is basically a referendum on how white people in the UK feel about minorities: http://bit.ly/28SyaDW ")
+
+#new_tweet = reduce_tweet("#voteleave Wednesday is my 25th wedding anniversary, when we vote out I'll buy you brexiters all a drink to cap a momentous week.")
+#new_tweet = reduce_tweet("Many of my father's generation gave their lives in defence of #Europe I won't give up their prize lightly! #VoteRemain")
+
+#new_tweet = reduce_tweet("I love how the leave campaigns only argument is that they will prevent immigration... Yet they won't even be able to do that. #VoteRemain")
+new_tweet = reduce_tweet("John Oliver on Brexit: 'Britain would be absolutely crazy to leave' the EU https://t.co/PXiDId3yXi #VoteRemain #StrongerIn #euref")
 print(new_tweet)
 new_tweet_feats = find_features(new_tweet)
 print("Naive Bayes Result: ", (classifier.classify(new_tweet_feats)))
