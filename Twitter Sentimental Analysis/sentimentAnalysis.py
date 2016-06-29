@@ -127,7 +127,21 @@ def openFile_getTokenizedTweets(filename, category):
 			global tokenized_tweets
 			#Pega cada token e bota em minuscula
 			lw_tokens = [w.lower() for w in tokens]
-			tokenized_tweets.append((lw_tokens, category, l))
+			tokenized_tweets.append((lw_tokens, category))
+
+def getTokenizedTweetsFile(filename, category):
+	with open(filename) as doc:
+		lines = doc.readlines()
+		result = []
+		#print(len(lines))
+		for l in lines:
+			#Pra tirar se tiver emotions no formato /u2026 por exemplo
+			l = l.decode('unicode_escape').encode('ascii','ignore')
+			tokens = tknzr.tokenize(l)
+			#Pega cada token e bota em minuscula
+			lw_tokens = [w.lower() for w in tokens]
+			result.append((lw_tokens, category))
+	return result
 
 def categorizy_tweets(tweets, category):
 	tweets_cat = [(tweet, category) for tweet in tweets]
@@ -185,14 +199,18 @@ def reduce_tweets_words():
 	[leave_tweets, stay_tweets, other_tweets] = readData()
 
 	leave_tweets = categorizy_tweets(leave_tweets, "neg")
+	new_leave = getTokenizedTweetsFile("ExtraLeaveTweets.txt", "neg")
 	stay_tweets = categorizy_tweets(stay_tweets, "pos")
+	new_stay = getTokenizedTweetsFile("ExtraStayTweets.txt", "pos")
 	other_tweets = categorizy_tweets(other_tweets, "neutral") 
 
-	tokenized_tweets = leave_tweets + stay_tweets + other_tweets
+	tokenized_tweets = leave_tweets + new_leave + stay_tweets + new_stay + other_tweets
 	all_words = []
 
 	print(len(leave_tweets))
+	print(len(new_leave))
 	print(len(stay_tweets))
+	print(len(new_stay))
 	print(len(other_tweets))
 	print(len(tokenized_tweets))
 	#############################################################################
@@ -326,7 +344,7 @@ def getTop_tweet_words(filtered_tweets):
   	# Tem 20515 palavras nessa lista
   	print(len(all_tweets_words))
   	# print(all_tweets_words[1230:1240])
-  	# print('\n')
+  	print('\n')
   	all_tweets_words = nltk.FreqDist(all_tweets_words)
   	#print(all_tweets_words["#itv"])
   	print(all_tweets_words.most_common(65))
@@ -446,18 +464,18 @@ def avaliate_new_classifier(featureSet):
 	print("\n")
 	#random.shuffle(featureSet)
 
-	#Cada um tem 97
-	positive_tweets = featureSet[:96]
+	#Cada um tem 197
+	positive_tweets = featureSet[:196]
 
 	#Misturando as paradas pra nao ficar testando só os mesmos últimos
 	random.shuffle(positive_tweets)
 
 	#print(featureSet[7185])
 	#Pra pegar 7185 do pos e 7185 do negativo mas o negativo tem 7213
-	negative_tweets = featureSet[96:193]
+	negative_tweets = featureSet[196:293]
 	random.shuffle(negative_tweets)
 
-	neutral_tweets = featureSet[193:]
+	neutral_tweets = featureSet[293:]
 	random.shuffle(neutral_tweets)
 
 	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
