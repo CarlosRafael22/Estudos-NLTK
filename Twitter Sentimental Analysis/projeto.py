@@ -10,7 +10,7 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.svm import SVC, LinearSVC, NuSVC
 
 from nltk.classify import ClassifierI #inhirate from Classifier class
-from statistics import mode
+#from statistics import mode
 ## So pra contar o tempo gasto em cada execucao
 import time
 import pickle
@@ -21,6 +21,12 @@ from nltk.tokenize import TweetTokenizer, word_tokenize
 import collections
 from nltk.metrics import precision, recall, f_measure
 from readData import readData
+
+from confusion import confusion
+
+
+import string
+from nltk import bigrams
 ########################################################
 
 tknzr = TweetTokenizer()
@@ -55,7 +61,9 @@ def getTokenizedTweetsFile(filename, category):
 		#print(len(lines))
 		for l in lines:
 			#Pra tirar se tiver emotions no formato /u2026 por exemplo
-			l = l.decode('unicode_escape').encode('ascii','ignore')
+			#l = l.decode('unicode_escape').encode('ascii','ignore')
+			l = l.decode('unicode_escape').encode('utf-8','ignore')
+			#l = l.encode('utf-8')
 			tokens = tknzr.tokenize(l)
 			#Pega cada token e bota em minuscula
 			lw_tokens = [w.lower() for w in tokens]
@@ -71,11 +79,11 @@ def reduce_tweets_words():
 	[leave_tweets, stay_tweets, other_tweets] = readData()
 
 	leave_tweets = categorizy_tweets(leave_tweets, "neg")
-	new_leave = getTokenizedTweetsFile("ExtraLeaveTweets.txt", "neg")
-	leave_Farias = getTokenizedTweetsFile("FariasLeave.txt", "neg")
+	new_leave = getTokenizedTweetsFile("leaveTweets/ExtraLeaveTweets.txt", "neg")
+	leave_Farias = getTokenizedTweetsFile("leaveTweets/FariasLeave.txt", "neg")
 	stay_tweets = categorizy_tweets(stay_tweets, "pos")
-	new_stay = getTokenizedTweetsFile("ExtraStayTweets.txt", "pos")
-	stay_Farias = getTokenizedTweetsFile("FariasStay.txt", "pos")
+	new_stay = getTokenizedTweetsFile("stayTweets/ExtraStayTweets.txt", "pos")
+	stay_Farias = getTokenizedTweetsFile("stayTweets/FariasStay.txt", "pos")
 	other_tweets = categorizy_tweets(other_tweets, "neutral") 
 
 	tokenized_tweets = leave_tweets + new_leave + leave_Farias + stay_tweets + new_stay + stay_Farias + other_tweets + other_tweets
@@ -106,8 +114,11 @@ def reduce_tweets_words():
 	punctuation = [u'.', u'-', u',', u'"', u'(', u')', u':', u"'", u'--', u';', 
 	u'!', u'$', u'*', u'&', u'...', u':/', u'/', u'..']
 	punctuation = set(punctuation)
+
+	punct = list(string.punctuation)
+	#stop = stopwords.words('english') + punctuation + ['rt', 'via']
 	global new_stop_words
-	new_stop_words = stop_words.union(punctuation)
+	new_stop_words = stop_words.union(punct)
 
 	twitter_symbols = [u'rt', u'#voteleave', u'#voteremain', u'#leaveeu', u'h', u'#rt', u'=', u'@', u'https',
 	u'+', u'\'', u'|', u'...']
@@ -121,8 +132,13 @@ def reduce_tweets_words():
 	emotions_pattern = '\u\d+'
 	url_pattern = 'http[s]?://(?:[a-z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-f][0-9a-f]))+'
 	user_rt_pattern = '(?:@[\w_]+)'
+	# "(?:[a-z][a-z'\-_]+[a-z])", # words with - and '
+ #    r'(?:[\w_]+)', # other words
+ #    r'(?:\S)' # anything else
     #user_rt_pattern = '(?:@[\w_]+)'
 	
+	
+
 	# filtered_tweets = [for tweet_cat in tokenized_tweets if ]
 	filtered_tweets = []
 	tokens_to_be_removed = []
@@ -268,18 +284,18 @@ def avaliate_new_classifier(featureSet):
 	print("\n")
 	#random.shuffle(featureSet)
 
-	#Cada um tem 197 + 50
-	positive_tweets = featureSet[:246]
+	#Cada um tem 198 + 50
+	positive_tweets = featureSet[:247]
 
 	#Misturando as paradas pra nao ficar testando só os mesmos últimos
 	random.shuffle(positive_tweets)
 
 	#print(featureSet[7185])
 	#Pra pegar 7185 do pos e 7185 do negativo mas o negativo tem 7213
-	negative_tweets = featureSet[246:343]
+	negative_tweets = featureSet[247:345]
 	random.shuffle(negative_tweets)
 
-	neutral_tweets = featureSet[343:]
+	neutral_tweets = featureSet[345:]
 	random.shuffle(neutral_tweets)
 
 	#Agora vou dividir cada classe em um conjunto de referencia e outro de teste
@@ -309,9 +325,12 @@ def avaliate_new_classifier(featureSet):
 	#training_set2 = [(t,l) for (t,l,twe) in training_set]
 
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
+	#classifier = SklearnClassifier(LinearSVC())
+	#classifier.train(training_set)
+
 	#testing_set2 = [(t,l) for (t,l,twe) in testing_set]
 	print("Naive Bayes Algo accuracy:", (nltk.classify.accuracy(classifier, testing_set)) * 100)
-	classifier.show_most_informative_features(45)
+	classifier.show_most_informative_features(60)
 
 	refsets = collections.defaultdict(set)
 	testsets = collections.defaultdict(set)
@@ -333,7 +352,8 @@ def avaliate_new_classifier(featureSet):
 	print 'neutral recall:', recall(refsets['neutral'], testsets['neutral'])
 	print 'neutral F-measure:', f_measure(refsets['neutral'], testsets['neutral'])
 
-
+	conf = confusion(refsets, testsets)
+	print(conf)
 	print("--- Classifier executed in %s seconds ---" % (time.time() - start_time))
 
 
@@ -410,7 +430,7 @@ print('\n')
 #new_tweet = reduce_tweet("Many of my father's generation gave their lives in defence of #Europe I won't give up their prize lightly! #VoteRemain")
 
 #new_tweet = reduce_tweet("I love how the leave campaigns only argument is that they will prevent immigration... Yet they won't even be able to do that. #VoteRemain")
-new_tweet = reduce_tweet("John Oliver on Brexit: 'Britain would be absolutely crazy to leave' the EU https://t.co/PXiDId3yXi #VoteRemain #StrongerIn #euref")
-print(new_tweet)
-new_tweet_feats = find_features(new_tweet)
-print("Naive Bayes Result: ", (classifier.classify(new_tweet_feats)))
+# new_tweet = reduce_tweet("John Oliver on Brexit: 'Britain would be absolutely crazy to leave' the EU https://t.co/PXiDId3yXi #VoteRemain #StrongerIn #euref")
+# print(new_tweet)
+# new_tweet_feats = find_features(new_tweet)
+# print("Naive Bayes Result: ", (classifier.classify(new_tweet_feats)))
