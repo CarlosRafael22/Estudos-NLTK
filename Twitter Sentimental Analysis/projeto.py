@@ -42,6 +42,7 @@ positive_tweets = []
 negative_tweets = []
 
 top_bigrams = []
+all_bigrams = []
 
 def openFile_getTokenizedTweets(filename, category):
 	with open(filename) as doc:
@@ -146,6 +147,17 @@ def reduce_tweets_words():
 	tokens_to_be_removed = []
 	#print(tokenized_tweets[228:230])
 
+	#############################################################################
+	#
+	# AQUI EU VOU TENTAR CONSTRUIR OS BIGRAMS DE CADA TWEET E ASSIM ADICIONA-LOS
+	# EM UMA LISTA COM TODOS OS BIGRAMS FEITOS, DO MESMO JEITO QUE FACO COM TODAS
+	# AS PALAVRAS DOS TWEETS
+	#
+	# Eh melhor criar a lista de todos os bigrams juntando cada lista de bigrams dos tweets
+	# do que fazer a lista dos bigrams baseado na lista de todas as palavras
+	# pq da segunda maneira podemos fazer bigrams que no existem pq pegam de um tweet e de outro
+	#############################################################################
+
 	#Para cada tupla (tweet_tok,categoria)
 	for tweet_cat in tokenized_tweets:
 
@@ -164,6 +176,15 @@ def reduce_tweets_words():
 
 		#Limpar o tokens_to_be_removed pq senao vai sempre acumular de outros tweets
 		tokens_to_be_removed = []
+
+		#Primeiro criar os bigrams desse tweet e dps adicionar na lista de todos os bigrams
+		tweet_bigrams = list(bigrams(tweet_cat[0]))
+
+		# tweet_bigrams eh uma lista entao se eu simplesmente fazer .append() em all_bigrams
+		# all_bigrams ira ser so uma lista de listas
+		for i in range(len(tweet_bigrams)):
+			all_bigrams.append(tweet_bigrams[i])
+
 		#Adiciona o tweet sem as stopwords na nova lista
 		filtered_tweets.append(tweet_cat)
 
@@ -251,8 +272,9 @@ def getTop_tweet_words(filtered_tweets):
   	#######################################################################
   	#Bigrams() retorna o tipo <generator object bigrams at 0x10fb8b3a8>. que quer dizer que esta pronto
   	#para computar uma sequencia de items. Entao a gnt tem que converter isso para list
-  	bigram_terms = list(bigrams(all_tweets_words))
-
+  	
+  	#bigram_terms = list(bigrams(all_tweets_words))
+  	bigram_terms = all_bigrams
   	print("Tem um total de " + str(len(bigram_terms)) + " bigrams")
   	print(bigram_terms[0])
   	print(bigram_terms[53])
