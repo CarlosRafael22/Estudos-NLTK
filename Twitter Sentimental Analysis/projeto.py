@@ -41,6 +41,8 @@ tokenized_tweets = []
 positive_tweets = []
 negative_tweets = []
 
+top_bigrams = []
+
 def openFile_getTokenizedTweets(filename, category):
 	with open(filename) as doc:
 		lines = doc.readlines()
@@ -121,7 +123,7 @@ def reduce_tweets_words():
 	new_stop_words = stop_words.union(punct)
 
 	twitter_symbols = [u'rt', u'#voteleave', u'#voteremain', u'#leaveeu', u'h', u'#rt', u'=', u'@', u'https',
-	u'+', u'\'', u'|', u'...']
+	u'+', u'\'', u'|', u'…', u'‘', u'’', u'..', u'...']
 	twitter_symbols = set(twitter_symbols)
 	new_stop_words = new_stop_words.union(twitter_symbols)
 
@@ -237,6 +239,30 @@ def getTop_tweet_words(filtered_tweets):
 
   	# Tem 20515 palavras nessa lista
   	print(len(all_tweets_words))
+  	print(all_tweets_words[:10])
+  	print(list(bigrams(all_tweets_words[:10])))
+  	print('\n')
+
+  	#######################################################################
+  	#
+  	# AGORA COM TODAS AS PALAVRAS EM UMA UNICA LISTA USAREMOS BIGRAMS PARA
+  	# SEREM ANALISADOS COMO FEATURES TB ALEM DE SOMENTE PALAVRAS ISOLADAS
+  	#
+  	#######################################################################
+  	#Bigrams() retorna o tipo <generator object bigrams at 0x10fb8b3a8>. que quer dizer que esta pronto
+  	#para computar uma sequencia de items. Entao a gnt tem que converter isso para list
+  	bigram_terms = list(bigrams(all_tweets_words))
+
+  	print("Tem um total de " + str(len(bigram_terms)) + " bigrams")
+  	print(bigram_terms[0])
+  	print(bigram_terms[53])
+  	print(bigram_terms[657])
+  	bigram_freq = nltk.FreqDist(bigram_terms)
+  	global top_bigrams
+  	top_bigrams = bigram_freq.most_common(20)
+  	print("Pegou os top bigrams: ")
+  	print(top_bigrams)
+
   	# print(all_tweets_words[1230:1240])
   	print('\n')
   	all_tweets_words = nltk.FreqDist(all_tweets_words)
@@ -264,6 +290,29 @@ def find_features(tweet):
 	#print(top_word_features_keys[:20])
 	for w in top_tweets_features:
 		features[w] = (w in tweet_words)
+
+	return features
+
+def new_find_features(tweet):
+	# Pega todas as palavras do documento e transforma em set pra retornar as palavras independente da frequencia dela
+	tweet_words = set(tweet)
+	# vai ser o dict dizendo quais palavras, de todas as tidas como mais importantes, estao presentes nese tweet
+	features = {}
+	
+	#Agora eu vou pegar os bigrams desse tweet e ver quais dos 2000 bigrams mais frequentes ele tem
+	tweet_bigrams = list(bigrams(tweet))
+	#print(tweet_bigrams)
+
+	for w in top_tweets_features:
+		features[w] = (w in tweet_words)
+
+	# Os top_bigrams vem como uma lista de tuplas: ((bigrams), frequencia)
+	# [(('leave', 'eu'), 129), (('stay', 'eu'), 67), ....] DESSE JEITO
+	# Entao a gnt tem que pegar so os primeiros elementos que sao as tuplas dos bigrams
+	top_bigrams_tuples = [bi_freq[0] for bi_freq in top_bigrams]
+
+	for bi in top_bigrams_tuples:
+		features[bi] = (bi in tweet_bigrams)
 
 	return features
 
@@ -412,8 +461,10 @@ top_tweets_features = getTop_tweet_words(filtered_tweets)
 
 # filtered_tweets tem a tupla ([u'@mpvine', u'If', u'fifty', u'million', u'people', u'say',
 # u'foolish', u'thing', u"it's", u'still', u'foolish', u'thing'], 'pos')) --> (tweet, category)
-featureSet = [(find_features(tweet), category) for (tweet, category) in filtered_tweets]
-#print(featureSet[2])
+featureSet = [(new_find_features(tweet), category) for (tweet, category) in filtered_tweets]
+# print(featureSet[5])
+# print('\n')
+# print(featureSet[2])
 print(len(featureSet))
 
 classifier = None
