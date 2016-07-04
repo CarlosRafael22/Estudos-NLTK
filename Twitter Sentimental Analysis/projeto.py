@@ -66,14 +66,26 @@ def getTokenizedTweetsFile(filename, category):
 			#Pra tirar se tiver emotions no formato /u2026 por exemplo
 			#l = l.decode('unicode_escape').encode('ascii','ignore')
 			l = l.decode('unicode_escape').encode('utf-8','ignore')
-			#l = l.encode('utf-8')
+			#DEixando em unicode
+			#l = l.decode('utf-8')
 			tokens = tknzr.tokenize(l)
+			#print(type(tokens[0]))
+			#import ipdb;ipdb.set_trace()
+			tokens = [token.encode('utf-8') for token in tokens]
+			#print(type(tokens[0]))
 			#Pega cada token e bota em minuscula
 			lw_tokens = [w.lower() for w in tokens]
 			result.append((lw_tokens, category))
 	return result
 
 def categorizy_tweets(tweets, category):
+	#Transformando cada token em unicode
+	# for tweet in tweets:
+	# 	for token in tweet:
+	# 		if type(token) == unicode:
+	# 			token = token.encode('utf-8').decode('utf-8')
+	# 		elif type(token) == str:
+	# 			token = token.decode('utf-8')
 	tweets_cat = [(tweet, category) for tweet in tweets]
 	return tweets_cat
 
@@ -165,6 +177,8 @@ def reduce_tweets_words():
 		for token in tweet_cat[0]:
 			#Se o token for uma das stop_words ou ter o Regex de URl ou RT a gnt tira
 			#print(token)
+			#token = token.decode('unicode_escape').encode('utf-8','ignore')
+			#token = token.decode('utf-8').encode('utf-8')
 			if token in new_stop_words or re.match(url_pattern, token) or re.search(user_rt_pattern, token) or re.match(emotions_pattern, token):
 				tokens_to_be_removed.append(token)
 				#print(tokens_to_be_removed)
@@ -177,17 +191,34 @@ def reduce_tweets_words():
 		#Limpar o tokens_to_be_removed pq senao vai sempre acumular de outros tweets
 		tokens_to_be_removed = []
 
+		# Encodando tudo pra sair do Unicode e ficar em UTF-8
+		#tweet_cat[0] = [token.encode('utf-8') for token in tweet_cat[0]]
+
 		#Primeiro criar os bigrams desse tweet e dps adicionar na lista de todos os bigrams
+		#print(type(tweet_cat[26][0]))
 		tweet_bigrams = list(bigrams(tweet_cat[0]))
+		#import ipdb;ipdb.set_trace()
+		#print(type(tweet_cat[26][0]))
 
 		# tweet_bigrams eh uma lista entao se eu simplesmente fazer .append() em all_bigrams
 		# all_bigrams ira ser so uma lista de listas
+		#tweet_bigrams = [bi.encode('utf-8') for bi in tweet_bigrams]
 		for i in range(len(tweet_bigrams)):
 			all_bigrams.append(tweet_bigrams[i])
 
 		#Adiciona o tweet sem as stopwords na nova lista
-		filtered_tweets.append(tweet_cat)
 
+		##################################################################
+		#
+		# AGORA TEM UM NOVO CAMPO COM TODOS OS BIGRAMS DO TWEET
+		# ASSIM OS BIGRAMS TB TERAO UMA CATEGORIA E SERAO IMPORTANTES PRA A CLASSIFICACAO
+		# COM ISSO AO INVES DE TUPLA SERA TRIPLA (tokens, bigrams, category)
+		#
+		##################################################################
+
+		tweet_bigrams_cat = (tweet_cat[0], tweet_bigrams, tweet_cat[1])
+
+		filtered_tweets.append(tweet_bigrams_cat)
 	# Exemplo de tweet filtrado com stopwords
 	# ([u'@mpvine', u'If', u'fifty', u'million', u'people', u'say',
 	# u'foolish', u'thing', u"it's", u'still', u'foolish', u'thing'], 'pos')
@@ -206,6 +237,10 @@ def reduce_tweets_words():
 		for item in filtered_tweets:
   			outfile.write(str(item) + '\n')
 
+  	#Arquivo com as novas tuplas dos tweets filtrados
+	with open('Bigrams.txt', 'w') as outfile:
+		for item in all_bigrams:
+  			outfile.write(str(item) + '\n')
 
   	return filtered_tweets
 
@@ -256,6 +291,7 @@ def getTop_tweet_words(filtered_tweets):
 
   	for tweet_cat in filtered_tweets:
   		for token in tweet_cat[0]:
+  			#Transformar tudo em porra de unicode
   			all_tweets_words.append(token)
 
   	# Tem 20515 palavras nessa lista
@@ -279,9 +315,12 @@ def getTop_tweet_words(filtered_tweets):
   	print(bigram_terms[0])
   	print(bigram_terms[53])
   	print(bigram_terms[657])
-  	bigram_freq = nltk.FreqDist(bigram_terms)
+  	bigram_freq = nltk.FreqDist([bi for bi in bigram_terms])
+  	#Mostra os que so aparecem uma vez
+  	print(len(bigram_freq.hapaxes()))
   	global top_bigrams
   	top_bigrams = bigram_freq.most_common(20)
+  	print(bigram_freq[('leave', 'eu')])
   	print("Pegou os top bigrams: ")
   	print(top_bigrams)
 
@@ -315,7 +354,7 @@ def find_features(tweet):
 
 	return features
 
-def new_find_features(tweet):
+def new_find_features(tweet, tweet_bi):
 	# Pega todas as palavras do documento e transforma em set pra retornar as palavras independente da frequencia dela
 	tweet_words = set(tweet)
 	# vai ser o dict dizendo quais palavras, de todas as tidas como mais importantes, estao presentes nese tweet
@@ -334,7 +373,7 @@ def new_find_features(tweet):
 	top_bigrams_tuples = [bi_freq[0] for bi_freq in top_bigrams]
 
 	for bi in top_bigrams_tuples:
-		features[bi] = (bi in tweet_bigrams)
+		features[bi] = (bi in tweet_bi)
 
 	return features
 
@@ -483,7 +522,10 @@ top_tweets_features = getTop_tweet_words(filtered_tweets)
 
 # filtered_tweets tem a tupla ([u'@mpvine', u'If', u'fifty', u'million', u'people', u'say',
 # u'foolish', u'thing', u"it's", u'still', u'foolish', u'thing'], 'pos')) --> (tweet, category)
-featureSet = [(new_find_features(tweet), category) for (tweet, category) in filtered_tweets]
+
+#featureSet = [(new_find_features(tweet), category) for (tweet, category) in filtered_tweets]
+featureSet = [(new_find_features(tweet, tweet_bi), category) for (tweet, tweet_bi, category) in filtered_tweets]
+
 # print(featureSet[5])
 # print('\n')
 # print(featureSet[2])
