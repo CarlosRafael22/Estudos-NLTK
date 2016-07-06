@@ -24,6 +24,7 @@ def readData():
 				id = splited[0]
 				tkns = ast.literal_eval(splited[1])
 				tkns = [token.lower() for token in tkns]
+				tkns = [token.decode('utf-8') for token in tkns]
 				target = splited[2]
 
 				if id not in idStorage:
@@ -56,8 +57,9 @@ def readData():
 			#DEixando tudo em unicode
 			#Pra tirar se tiver emotions no formato /u2026 por exemplo
 			# tweet_tokens = [token.decode('unicode_escape').encode('utf-8','ignore') for token in tweet_tokens]
-			# tweet_tokens = [token.decode('utf-8') for token in tweet_tokens]
+			
 			tweet_tokens = [w.lower() for w in tweet_tokens]
+			tweet_tokens = [token.encode('utf-8').decode('utf-8') for token in tweet_tokens]
 			stay.append(tweet_tokens)
 
 	with open('1leaveTweets.txt','r') as file:
@@ -71,6 +73,7 @@ def readData():
 			# tweet_tokens = [token.decode('unicode_escape').encode('utf-8','ignore') for token in tweet_tokens]
 			# tweet_tokens = [token.decode('utf-8') for token in tweet_tokens]
 			tweet_tokens = [w.lower() for w in tweet_tokens]
+			tweet_tokens = [token.encode('utf-8').decode('utf-8') for token in tweet_tokens]
 
 			leave.append(tweet_tokens)
 
@@ -85,6 +88,7 @@ def readData():
 			# tweet_tokens = [token.decode('unicode_escape').encode('utf-8','ignore') for token in tweet_tokens]
 			# tweet_tokens = [token.decode('utf-8') for token in tweet_tokens]
 			tweet_tokens = [w.lower() for w in tweet_tokens]
+			tweet_tokens = [token.encode('utf-8').decode('utf-8') for token in tweet_tokens]
 			other.append(tweet_tokens)
 
 	return [leave, stay, other]

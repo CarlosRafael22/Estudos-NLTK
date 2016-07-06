@@ -70,8 +70,10 @@ def getTokenizedTweetsFile(filename, category):
 			#l = l.decode('utf-8')
 			tokens = tknzr.tokenize(l)
 			#print(type(tokens[0]))
+			tokens = [token.encode('utf-8').decode('utf-8') for token in tokens]
+			#Type = Unicode
+			
 			#import ipdb;ipdb.set_trace()
-			tokens = [token.encode('utf-8') for token in tokens]
 			#print(type(tokens[0]))
 			#Pega cada token e bota em minuscula
 			lw_tokens = [w.lower() for w in tokens]
@@ -86,8 +88,17 @@ def categorizy_tweets(tweets, category):
 	# 			token = token.encode('utf-8').decode('utf-8')
 	# 		elif type(token) == str:
 	# 			token = token.decode('utf-8')
+	#import ipdb;ipdb.set_trace()
+	#Type Tweets[0][0] = Str
 	tweets_cat = [(tweet, category) for tweet in tweets]
+	#import ipdb;ipdb.set_trace()
 	return tweets_cat
+
+def unicode_them(tweets):
+	for tweet_tuple in tweets:
+		for token in tweet_tuple[0]:
+			token = token.encode('utf-8').decode('utf-8')
+	return tweets
 
 def reduce_tweets_words():
 
@@ -101,9 +112,16 @@ def reduce_tweets_words():
 	stay_Farias = getTokenizedTweetsFile("stayTweets/FariasStay.txt", "pos")
 	other_tweets = categorizy_tweets(other_tweets, "neutral") 
 
+	#Os arquivos que foram de Ada e vem pelo metodo categorizy_tweets sao todos 'Str'
+	#Vou tentar fazer todos Unicode
+	#leave_tweets = unicode_them(leave_tweets)
+	#stay_tweets = unicode_them(stay_tweets)
+	#other_tweets = unicode_them(other_tweets)
+
 	tokenized_tweets = leave_tweets + new_leave + leave_Farias + stay_tweets + new_stay + stay_Farias + other_tweets + other_tweets
 	all_words = []
 
+	#import ipdb;ipdb.set_trace()
 	print(len(leave_tweets))
 	print(len(new_leave))
 	print(len(leave_Farias))
@@ -176,9 +194,8 @@ def reduce_tweets_words():
 		#Pra cada token desse tweet
 		for token in tweet_cat[0]:
 			#Se o token for uma das stop_words ou ter o Regex de URl ou RT a gnt tira
-			#print(token)
-			#token = token.decode('unicode_escape').encode('utf-8','ignore')
-			#token = token.decode('utf-8').encode('utf-8')
+			#import ipdb;ipdb.set_trace()
+			#token = token.encode('utf-8').decode('utf-8')
 			if token in new_stop_words or re.match(url_pattern, token) or re.search(user_rt_pattern, token) or re.match(emotions_pattern, token):
 				tokens_to_be_removed.append(token)
 				#print(tokens_to_be_removed)
@@ -186,6 +203,8 @@ def reduce_tweets_words():
 		#Vi todos os tokens q eram pra ser removidos desse tweet
 		#Agora vou remove-los
 		for token in tokens_to_be_removed:
+			#import ipdb;ipdb.set_trace()
+			#token = token.encode('utf-8').decode('utf-8')
 			tweet_cat[0].remove(token)
 
 		#Limpar o tokens_to_be_removed pq senao vai sempre acumular de outros tweets
@@ -196,7 +215,14 @@ def reduce_tweets_words():
 
 		#Primeiro criar os bigrams desse tweet e dps adicionar na lista de todos os bigrams
 		#print(type(tweet_cat[26][0]))
+		# for token in tweet_cat[0]:
+		# 	#Transformando tudo em unicode
+		# 	if type(token) == str:
+	 #  			token = token.decode('utf-8')
+  # 			elif type(token) == unicode:
+  # 				token = token.encode('utf-8').decode('utf-8')
 		tweet_bigrams = list(bigrams(tweet_cat[0]))
+		#tweet_bigrams = [(tupla[0].decode('utf-8'), tupla[1].decode('utf-8')) for tupla in tweet_bigrams]
 		#import ipdb;ipdb.set_trace()
 		#print(type(tweet_cat[26][0]))
 
@@ -292,7 +318,17 @@ def getTop_tweet_words(filtered_tweets):
   	for tweet_cat in filtered_tweets:
   		for token in tweet_cat[0]:
   			#Transformar tudo em porra de unicode
+  			# if type(token) == str:
+  			# 	token = token.decode('utf-8')
+  			# elif type(token) == unicode:
+  			# 	token = token.encode('utf-8').decode('utf-8')
   			all_tweets_words.append(token)
+  	#import ipdb;ipdb.set_trace()
+
+  	#Arquivo com as novas tuplas dos tweets filtrados
+	with open('AllWords.txt', 'w') as outfile:
+		for item in all_tweets_words:
+  			outfile.write(item.encode('utf-8') + '\n')
 
   	# Tem 20515 palavras nessa lista
   	print(len(all_tweets_words))
